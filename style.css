@@ -1,0 +1,36 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.zizi {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: rotate(180deg);
+}
+
+.main {
+    top: 50%;
+    left: 48%;
+    transform: translate(-50%, -50%);
+    position: absolute;
+    transition: all 0.2s ease-in-out;
+}
+
+.MainSvg {
+    width: 20em;
+    height: 20em;
+}
+
+.scoreDisplay {
+    position: absolute;
+    top: 10%;
+    left: 80%;
+    transform: translateX(-50%);
+    font-size: 2em;
+    color: #333;
+    font-family: Arial, sans-serif;
+}
