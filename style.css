@@ -2,7 +2,7 @@ body {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background-color: #f0f0f0;
+    background-color: #727272;
     font-family: Arial, sans-serif;
 }
 
@@ -32,13 +32,14 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.85); 
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     color: white;
     z-index: 200;
+    overflow: hidden; 
 }
 
 .game-over-screen h1 { 
@@ -116,4 +117,128 @@ body {
     font-size: 2em;
     color: #333;
     font-family: Arial, sans-serif;
+}
+
+/* --- L'EFFET YAOURT ULTRA-RÉALISTE --- */
+
+.yogurt-background {
+    /* Permet d'appliquer un filtre d'ombre global à tout ce qui est généré dedans */
+    /* C'est ça qui donne l'effet de détachement du fond noir */
+    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.5));
+}
+
+/* 1. LE CORPS PRINCIPAL (La flaque centrale) */
+.yogurt-background::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    
+    width: 520px;
+    height: 480px;
+    
+    /* NUANCE 1 : Un dégradé pour la lumière (Lumière en haut à gauche) */
+    background: radial-gradient(circle at 30% 30%, #ffffff 20%, #f0f0f0 60%, #e0e0e0 100%);
+    
+    /* NUANCE 2 : Forme organique */
+    border-radius: 48% 52% 41% 59% / 56% 46% 54% 44%;
+    
+
+    box-shadow: 
+        inset 10px 10px 20px rgba(255, 255, 255, 1), /* Reflet brillant interne haut-gauche */
+        inset -10px -20px 30px rgba(0, 0, 0, 0.05);  /* Ombre interne bas-droite */
+    
+    z-index: -1;
+    animation: splatMain 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* 2. LES ÉCLABOUSSURES (Les gouttes et les bras) */
+.yogurt-background::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    
+    /* Point central invisible */
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: transparent; 
+    
+    /* NUANCE 4 : J'ai varié les couleurs des ombres (#fff, #f2f2f2, #eee) 
+       pour que certaines gouttes paraissent plus lumineuses que d'autres.
+       J'ai aussi augmenté l'espacement (les pixels négatifs/positifs sont plus grands).
+    */
+    box-shadow: 
+        /* --- BRAS LONGS (Liaisons) --- */
+        /* Haut-Gauche */
+        -360px -180px 0 18px #f9f9f9,
+        -190px -230px 0 8px #ffffff,
+        
+        /* Bas-Gauche (Grosse coulée) */
+        -320px 190px 0 22px #eeeeee,
+        -150px 240px 0 12px #f2f2f2,
+
+        /* Droite */
+        420px -60px 0 14px #f9f9f9,
+        
+        /* --- GOUTTELETTES ÉLOIGNÉES (Satellites) --- */
+        /* Très loin en haut */
+        -20px -320px 0 -1px #ffffff,
+        
+        /* Très loin à gauche */
+        -280px 40px 0 2px #f0f0f0,
+        -240px 100px 0 4px #ffffff,
+        
+        /* En bas à droite */
+        190px 210px 0 6px #e6e6e6,
+        240px 250px 0 -2px #ffffff,
+        
+        /* En haut à droite */
+        300px -120px 0 3px #ffffff,
+        
+        /* Détails proches du centre pour la texture */
+        80px -200px 0 5px #f5f5f5;
+
+    z-index: -1;
+    animation: splatDrops 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards 0.05s;
+}
+
+/* --- ANIMATIONS (Légèrement ajustées pour un rebond "lourd") --- */
+@keyframes splatMain {
+    0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 0.5; }
+    60% { transform: translate(-50%, -50%) scale(1.05) rotate(5deg); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes splatDrops {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+    70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+/* --- TEXTE (Pour garantir la lisibilité sur le blanc) --- */
+.yogurt-background h1, 
+.yogurt-background p,
+.yogurt-background span {
+    color: #ff4757; 
+    /* Ombre blanche dure pour détacher le texte si une goutte passe dessous */
+    text-shadow: 
+        2px 2px 0 #ffffff,
+        -1px -1px 0 #ffffff, 
+        1px -1px 0 #ffffff,
+        -1px 1px 0 #ffffff,
+        1px 1px 0 #ffffff;
+    z-index: 10; 
+    font-weight: bold;
+}
+
+.yogurt-background button {
+    background-color: #333; 
+    color: white;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    border: 2px solid white; 
+    z-index: 10;
 }
