@@ -2,14 +2,96 @@ body {
     margin: 0;
     padding: 0;
     overflow: hidden;
+    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
+}
+
+.timer-container {
+    position: absolute;
+    top: 10px;
+    width: 70%;
+    height: 20px;
+    background-color: #ddd;
+    border-radius: 20px;
+    z-index: 100;
+}
+
+.timer-bar {
+    width: 100%;
+    height: 100%;
+    background-color: #ff4757;
+    border-radius: 20px;
+    transition: width 0.1s linear;
+}
+
+.game-over-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    z-index: 200;
+}
+
+.game-over-screen h1 { 
+    font-size: 3em; 
+    margin-bottom: 20px; 
+    text-transform: uppercase; 
+}
+
+.game-over-screen p { 
+    font-size: 1.5em; 
+    margin: 10px 0; 
+}
+
+.game-over-screen button {
+    margin-top: 30px;
+    padding: 15px 30px;
+    font-size: 1.2em;
+    cursor: pointer;
+    background-color: #2ed573;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.game-over-screen button:hover { 
+    background-color: #26af61; 
+}
+
+.hidden { 
+    display: none !important; 
 }
 
 .zizi {
     height: 100vh;
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
     transform: rotate(180deg);
+}
+
+.zizi img {
+    position: absolute;
+    transition: opacity 1s ease;
+}
+
+#ziziFast {
+    opacity: 0;
+    z-index: 2; 
+}
+
+#ziziNormal {
+    opacity: 1;
+    z-index: 1;
 }
 
 .main {

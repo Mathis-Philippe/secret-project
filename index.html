@@ -7,15 +7,24 @@
     <title>Branlez moi svp</title>
 </head>
 <body>
+    <div class="timer-container">
+        <div id="timerBar" class="timer-bar"></div>
+    </div>
     <div>
         <p id="scoreDisplay" class="scoreDisplay">Score : 0</p>
     </div>
     <div class="zizi">
         <img src="img/penis.png" alt="mon zizi" id="ziziNormal">
-        <img src="img/penis_red.png" alt="zizi rapide" id="ziziFast" style="display: none;">
+        <img src="img/penis_red.png" alt="zizi rapide" id="ziziFast">
     </div>
     <div id="main" class="main">
         <img class="MainSvg" src="img/fist.png" alt="ma main">
+    </div>
+    <div id="gameOverScreen" class="game-over-screen hidden">
+        <h1>C'EST FINI !</h1>
+        <p>Ton score : <span id="finalScore">0</span></p>
+        <p>Meilleur score : <span id="bestScore">0</span></p>
+        <button onclick="restartGame()">REJOUER</button>
     </div>
     <script src="script.js"></script>
 </body>
