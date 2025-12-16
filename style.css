@@ -119,94 +119,245 @@ body {
     font-family: Arial, sans-serif;
 }
 
+.side-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 300px; /* Largeur du menu */
+    height: 100vh;
+    background-color: rgba(30, 30, 30, 0.95); /* Fond sombre semi-transparent */
+    backdrop-filter: blur(5px);
+    color: white;
+    padding: 20px;
+    box-sizing: border-box;
+    
+    /* Animation de glissement */
+    transform: translateX(-120%); 
+    transition: transform 0.3s ease-in-out;
+    
+    z-index: 300; /* Au-dessus de tout (même du Game Over qui est à 200) */
+    border-right: 2px solid #ff4757;
+    box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+    font-family: Arial, sans-serif;
+}
+
+/* Classe pour afficher le menu */
+.side-menu.active {
+    transform: translateX(0);
+}
+
+.side-menu h2 {
+    border-bottom: 1px solid #555;
+    padding-bottom: 10px;
+    margin-top: 0;
+    text-align: center;
+    color: #ff4757;
+}
+
+/* Bouton fermer (croix) */
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 2em;
+    cursor: pointer;
+}
+.close-btn:hover { color: white; }
+
+/* Styles spécifiques au Profil */
+.avatar-circle {
+    width: 80px; height: 80px;
+    background: #555;
+    border-radius: 50%;
+    margin: 20px auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2em;
+}
+.action-btn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background: #ff4757;
+    border: none;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 5px;
+}
+.logout-btn {
+    background: #555;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-top: 20px;
+    width: 100%;
+}
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    box-sizing: border-box;
+    border-radius: 5px;
+    border: none;
+}
+
+/* Styles spécifiques au Classement */
+.leaderboard-list {
+    list-style: none;
+    padding: 0;
+}
+.leaderboard-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #444;
+    font-weight: bold;
+}
+.leaderboard-list li:nth-child(1) { color: gold; }
+.leaderboard-list li:nth-child(2) { color: silver; }
+.leaderboard-list li:nth-child(3) { color: #cd7f32; } /* Bronze */
+
+/* Styles spécifiques à la Boutique */
+.wallet-display {
+    text-align: center;
+    font-size: 1.2em;
+    margin-bottom: 20px;
+    background: #444;
+    padding: 10px;
+    border-radius: 10px;
+}
+.shop-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+.shop-item {
+    background: #444;
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+}
+.item-preview {
+    height: 50px;
+    width: 50px;
+    margin: 0 auto 10px;
+    background: #666;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.buy-btn {
+    background: #2ed573;
+    border: none;
+    color: white;
+    padding: 5px;
+    border-radius: 3px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 0.9em;
+}
+.buy-btn:hover { background: #26af61; }
+
+
+.menu-buttons {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column; /* Vertical */
+    gap: 15px; /* Espacement entre les bulles */
+    z-index: 150;
+}
+
+/* Style des boutons ronds */
+.menu-buttons button {
+    width: 50px;      /* Largeur fixe */
+    height: 50px;     /* Hauteur identique pour faire un carré/rond */
+    border-radius: 50%; /* C'est ça qui fait le rond parfait */
+    padding: 0;       /* Important pour le centrage */
+    
+    background-color: #333;
+    border: 2px solid #fff;
+    color: #fff;
+    font-size: 1.4em; /* Taille de l'icône */
+    
+    /* Centrage parfait de l'icône */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    transition: transform 0.1s, background-color 0.2s;
+}
+
+/* Effet au survol */
+.menu-buttons button:hover {
+    background-color: #ff4757; /* Rouge */
+    transform: scale(1.1);     /* Grossit un peu */
+}
+
+.menu-buttons button:active {
+    transform: scale(0.9);
+}
+
 /* --- L'EFFET YAOURT ULTRA-RÉALISTE --- */
 
 .yogurt-background {
-    /* Permet d'appliquer un filtre d'ombre global à tout ce qui est généré dedans */
-    /* C'est ça qui donne l'effet de détachement du fond noir */
     filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.5));
 }
 
-/* 1. LE CORPS PRINCIPAL (La flaque centrale) */
 .yogurt-background::before {
     content: '';
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) scale(0);
-    
     width: 520px;
     height: 480px;
-    
-    /* NUANCE 1 : Un dégradé pour la lumière (Lumière en haut à gauche) */
     background: radial-gradient(circle at 30% 30%, #ffffff 20%, #f0f0f0 60%, #e0e0e0 100%);
-    
-    /* NUANCE 2 : Forme organique */
     border-radius: 48% 52% 41% 59% / 56% 46% 54% 44%;
-    
-
     box-shadow: 
-        inset 10px 10px 20px rgba(255, 255, 255, 1), /* Reflet brillant interne haut-gauche */
-        inset -10px -20px 30px rgba(0, 0, 0, 0.05);  /* Ombre interne bas-droite */
-    
+        inset 10px 10px 20px rgba(255, 255, 255, 1),
+        inset -10px -20px 30px rgba(0, 0, 0, 0.05); 
     z-index: -1;
     animation: splatMain 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
-/* 2. LES ÉCLABOUSSURES (Les gouttes et les bras) */
 .yogurt-background::after {
     content: '';
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) scale(0);
-    
-    /* Point central invisible */
     width: 10px;
     height: 10px;
     border-radius: 50%;
     background: transparent; 
-    
-    /* NUANCE 4 : J'ai varié les couleurs des ombres (#fff, #f2f2f2, #eee) 
-       pour que certaines gouttes paraissent plus lumineuses que d'autres.
-       J'ai aussi augmenté l'espacement (les pixels négatifs/positifs sont plus grands).
-    */
     box-shadow: 
-        /* --- BRAS LONGS (Liaisons) --- */
-        /* Haut-Gauche */
         -360px -180px 0 18px #f9f9f9,
         -190px -230px 0 8px #ffffff,
-        
-        /* Bas-Gauche (Grosse coulée) */
         -320px 190px 0 22px #eeeeee,
         -150px 240px 0 12px #f2f2f2,
-
-        /* Droite */
         420px -60px 0 14px #f9f9f9,
-        
-        /* --- GOUTTELETTES ÉLOIGNÉES (Satellites) --- */
-        /* Très loin en haut */
         -20px -320px 0 -1px #ffffff,
-        
-        /* Très loin à gauche */
         -280px 40px 0 2px #f0f0f0,
         -240px 100px 0 4px #ffffff,
-        
-        /* En bas à droite */
         190px 210px 0 6px #e6e6e6,
         240px 250px 0 -2px #ffffff,
-        
-        /* En haut à droite */
         300px -120px 0 3px #ffffff,
-        
-        /* Détails proches du centre pour la texture */
         80px -200px 0 5px #f5f5f5;
-
     z-index: -1;
     animation: splatDrops 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards 0.05s;
 }
 
-/* --- ANIMATIONS (Légèrement ajustées pour un rebond "lourd") --- */
 @keyframes splatMain {
     0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 0.5; }
     60% { transform: translate(-50%, -50%) scale(1.05) rotate(5deg); opacity: 1; }
@@ -219,12 +370,10 @@ body {
     100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 }
 
-/* --- TEXTE (Pour garantir la lisibilité sur le blanc) --- */
 .yogurt-background h1, 
 .yogurt-background p,
 .yogurt-background span {
     color: #ff4757; 
-    /* Ombre blanche dure pour détacher le texte si une goutte passe dessous */
     text-shadow: 
         2px 2px 0 #ffffff,
         -1px -1px 0 #ffffff, 

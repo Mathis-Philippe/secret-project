@@ -1,5 +1,3 @@
-// --- 1. SÉLECTION DES ÉLÉMENTS HTML (DOM) ---
-// Il est CRUCIAL que ces lignes soient ici pour que les fonctions les trouvent
 const main = document.getElementById('main');
 const ziziNormal = document.getElementById('ziziNormal');
 const ziziFast = document.getElementById('ziziFast');
@@ -8,8 +6,13 @@ const timerBar = document.getElementById('timerBar');
 const gameOverScreen = document.getElementById('gameOverScreen');
 const finalScoreSpan = document.getElementById('finalScore');
 const bestScoreSpan = document.getElementById('bestScore');
+const SUPABASE_URL = 'TON_URL_SUPABASE_ICI';
+const SUPABASE_KEY = 'TA_CLE_ANON_PUBLIC_ICI';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// --- 2. VARIABLES DU JEU ---
+let currentUser = null; 
+let userProfile = null;
+
 let point = 0;
 let highScore = 0;
 let isKeyDown = false;
