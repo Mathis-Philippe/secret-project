@@ -1,3 +1,11 @@
+const SUPABASE_URL = 'https://eicbafnrqoccdadvpkzt.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpY2JhZm5ycW9jY2RhZHZwa3p0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU4OTE0MDIsImV4cCI6MjA4MTQ2NzQwMn0.WBTHHYCj0w6NgJmN5uQkOv9uSnym5TwKz6hGNFapu_k';
+
+window.sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+window.currentUser = null; 
+window.userProfile = null;
+
 const main = document.getElementById('main');
 const ziziNormal = document.getElementById('ziziNormal');
 const ziziFast = document.getElementById('ziziFast');
@@ -6,12 +14,7 @@ const timerBar = document.getElementById('timerBar');
 const gameOverScreen = document.getElementById('gameOverScreen');
 const finalScoreSpan = document.getElementById('finalScore');
 const bestScoreSpan = document.getElementById('bestScore');
-const SUPABASE_URL = 'TON_URL_SUPABASE_ICI';
-const SUPABASE_KEY = 'TA_CLE_ANON_PUBLIC_ICI';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let currentUser = null; 
-let userProfile = null;
 
 let point = 0;
 let highScore = 0;
@@ -26,6 +29,9 @@ const GAME_DURATION = 15000;
 let timeLeft = GAME_DURATION;
 let timerInterval;
 
+window.point = point;
+window.highScore = highScore;
+
 // --- 3. FONCTIONS ---
 
 function endGame() {
@@ -36,6 +42,7 @@ function endGame() {
     // Mise à jour du meilleur score
     if (point > highScore) {
         highScore = point;
+        window.highScore = highScore;
     }
 
     // On remplit les scores dans l'HTML
@@ -50,8 +57,12 @@ function endGame() {
     }
 }
 
+window.originalEndGame = endGame;
+window.endGame = endGame;
+
 function restartGame() {
     point = 0;
+    window.point = 0;
     timeLeft = GAME_DURATION;
     isGameOver = false;
     gameStarted = false;
@@ -72,7 +83,6 @@ function restartGame() {
     lastClickTime = Date.now();
 }
 
-// On attache la fonction à la fenêtre pour que le bouton HTML puisse cliquer dessus
 window.restartGame = restartGame;
 
 function startTimer() {
@@ -90,7 +100,9 @@ function startTimer() {
 
         if (timeLeft <= 0) {
             if(timerBar) timerBar.style.width = `0%`;
-            endGame(); // Lancement de la fin
+            window.endGame();
         }
     }, 50);
 }
+
+window.startTimer = startTimer;

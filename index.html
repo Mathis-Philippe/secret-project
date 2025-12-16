@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
     <title>Branlez moi svp</title>
 </head>
 <body>
@@ -13,6 +16,7 @@
         <button id="btnLeaderboard" title="Classement"><i class="fa-solid fa-trophy"></i></button>
         <button id="btnShop" title="Boutique"><i class="fa-solid fa-store"></i></button>
     </div>
+    
     <div id="sideMenus" class="side-menus-container">
 
         <div id="menuProfile" class="side-menu">
@@ -21,9 +25,9 @@
             
             <div id="loginSection">
                 <p>Connecte-toi pour sauvegarder ta progression !</p>
-                <input type="text" id="usernameInput" placeholder="Pseudo">
-                <input type="password" placeholder="Mot de passe">
-                <button onclick="loginUser()" class="action-btn">Se connecter</button>
+                <input type="text" id="emailInput" placeholder="Email (ex: moi@gmail.com)">
+                <input type="password" id="passwordInput" placeholder="Mot de passe">
+                <button onclick="loginUser()" class="action-btn">Se connecter / S'inscrire</button>
             </div>
     
             <div id="profileInfo" class="hidden">
@@ -39,11 +43,7 @@
             <button class="close-btn" onclick="closeAllMenus()">&times;</button>
             <h2>Classement Mondial</h2>
             <ul class="leaderboard-list">
-                <li><span>1. 🥇 xX_Slayer_Xx</span> <span>15000</span></li>
-                <li><span>2. 🥈 Mathis</span> <span>12400</span></li>
-                <li><span>3. 🥉 LeZiziDu75</span> <span>10200</span></li>
-                <li><span>4. PGM_2000</span> <span>9800</span></li>
-                <li><span>5. NoobMaster</span> <span>500</span></li>
+                <li>Chargement...</li>
             </ul>
         </div>
     
@@ -74,6 +74,7 @@
         </div>
     
     </div>
+
     <div class="timer-container">
         <div id="timerBar" class="timer-bar"></div>
     </div>
@@ -93,6 +94,7 @@
         <p>Meilleur score : <span id="bestScore">0</span></p>
         <button onclick="restartGame()">REJOUER</button>
     </div>
+
     <script src="js/script.js"></script>
     <script src="js/index.js"></script>
     <script src="js/menu.js"></script>
