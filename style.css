@@ -221,9 +221,38 @@ input {
 }
 .leaderboard-list li:nth-child(1) { color: gold; }
 .leaderboard-list li:nth-child(2) { color: silver; }
-.leaderboard-list li:nth-child(3) { color: #cd7f32; } /* Bronze */
+.leaderboard-list li:nth-child(3) { color: #cd7f32; }
 
-/* Styles spécifiques à la Boutique */
+.leaderboard-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    background: #333;
+    border: 1px solid #555;
+    color: #aaa;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s;
+}
+
+.tab-btn:hover {
+    background: #444;
+    color: white;
+}
+
+.tab-btn.active {
+    background: #ff4757;
+    color: white;
+    border-color: #ff4757;
+    font-weight: bold;
+}
+
 .wallet-display {
     text-align: center;
     font-size: 1.2em;
@@ -390,4 +419,67 @@ input {
     box-shadow: 0 10px 20px rgba(0,0,0,0.3);
     border: 2px solid white; 
     z-index: 10;
+}
+
+.equip-btn {
+    background: #3498db;
+    border: none;
+    color: white;
+    padding: 5px;
+    border-radius: 3px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 0.9em;
+}
+
+.equip-btn:hover { background: #2980b9; }
+
+
+.shop-item.equipped {
+    border: 2px solid #2ed573;
+    background-color: #555;
+}
+
+.coin-animation {
+    position: absolute;
+    top: 70%;
+    left: 80%;
+    transform: translate(-50%, -50%);
+    
+    font-size: 4em;
+    font-weight: bold;
+    color: #ffd700; /* Or */
+    text-shadow: 
+        2px 2px 0 #000,
+        0 0 20px rgba(255, 215, 0, 0.5); /* Lueur dorée */
+    
+    z-index: 300;
+    pointer-events: none; 
+    white-space: nowrap;
+}
+
+.animate-pop {
+    animation: popUpFade 2.5s ease-out forwards;
+}
+
+@keyframes popUpFade {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    15% {
+        opacity: 1;
+        transform: translate(-50%, -60%) scale(1.2); /* Léger rebond */
+    }
+    30% {
+        transform: translate(-50%, -60%) scale(1);
+    }
+    80% {
+        opacity: 1;
+        transform: translate(-50%, -80%); /* Monte doucement */
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -100%); /* Disparait vers le haut */
+    }
 }
