@@ -7,10 +7,14 @@ let currentLeaderboardTab = 'global';
 let coins = 100;
 window.shopItemsCache = []; 
 
+// NOUVEAU : Variables pour les filtres
+let currentShopFilter = 'all';
+let currentInvFilter = 'all';
+
 // Gestion ouverture menus
 document.getElementById('btnProfile').addEventListener('click', () => {
     toggleMenu(menuProfile);
-    if (window.currentUser) renderInventory(); // Charge l'inventaire dans le profil
+    if (window.currentUser) renderInventory(); 
 });
 
 document.getElementById('btnLeaderboard').addEventListener('click', () => {
@@ -20,7 +24,7 @@ document.getElementById('btnLeaderboard').addEventListener('click', () => {
 
 document.getElementById('btnShop').addEventListener('click', () => {
     toggleMenu(menuShop);
-    renderShop(); // Charge les articles à acheter dans la boutique
+    renderShop(); 
 });
 
 function toggleMenu(menu) {
@@ -88,13 +92,21 @@ window.setUsername = async function() {
     
     try {
         const { error } = await window.sbClient.from('profiles').insert([
-            { id: window.currentUser.id, username: pseudo, coins: 100, high_score: 0 }
+            { 
+                id: window.currentUser.id, 
+                username: pseudo, 
+                coins: 100, 
+                high_score: 0,
+                equipped_skin: 'skin_default',
+                equipped_hand: 'hand_default',
+                equipped_bg: 'default',
+                equipped_sound: 'sound_default'
+            }
         ]);
         if (error) throw error;
 
         document.getElementById('selectPseudo').classList.add('hidden');
         await handleLoginSuccess(window.currentUser);
-        alert("Bienvenue " + pseudo + " !");
     } catch (err) {
         console.error(err);
         alert("Erreur création profil.");
@@ -104,7 +116,6 @@ window.setUsername = async function() {
 async function handleLoginSuccess(user) {
     window.currentUser = user;
     
-    // On charge le catalogue (items)
     if (window.shopItemsCache.length === 0) await loadShopItems();
 
     const { data } = await window.sbClient
@@ -126,6 +137,7 @@ async function handleLoginSuccess(user) {
         
         updateUI();
         applyCosmetics(); 
+        renderInventory(); 
     }
 }
 
@@ -143,24 +155,28 @@ window.logoutUser = async function() {
     document.getElementById('ziziNormal').src = 'img/penis.png';
     document.body.style.backgroundColor = '#727272';
     document.getElementById('handImage').src = 'img/fist.png';
+    document.getElementById('gameEndSound').src = '';
     
     updateUI();
 };
 
 // ==========================================
-// 2. FIN DE JEU (CORRECTIF BUG SCORE)
+// 2. FIN DE JEU
 // ==========================================
 
 window.endGame = async function() {
-    window.originalEndGame(); // Affiche l'écran de fin
+    window.originalEndGame(); 
+
+    const audioPlayer = document.getElementById('gameEndSound');
+    if (audioPlayer && audioPlayer.src) {
+        audioPlayer.currentTime = 0;
+        audioPlayer.play().catch(e => console.log("Erreur audio:", e));
+    }
 
     const scoreText = document.getElementById('finalScore').textContent;
     const currentPoints = parseInt(scoreText) || 0;
-    
-    // Calcul pièces (1 point = 0.64 pièce)
     const coinsEarned = Math.floor(currentPoints * 0.64);
     
-    // Animation visuelle des pièces
     const animDiv = document.getElementById('coinAnimation');
     if (animDiv && coinsEarned > 0) {
         animDiv.innerHTML = `+ ${coinsEarned} <i class="fa-solid fa-coins"></i>`;
@@ -169,9 +185,7 @@ window.endGame = async function() {
         setTimeout(() => animDiv.classList.add('hidden'), 2500);
     }
 
-    // SAUVEGARDE SÉCURISÉE
     if (window.currentUser) {
-        // A. On récupère les VRAIES données actuelles de la base (pour éviter l'écrasement)
         const { data: profileData } = await window.sbClient
             .from('profiles')
             .select('high_score, coins, username')
@@ -182,32 +196,26 @@ window.endGame = async function() {
         let dbCoins = profileData ? profileData.coins : 0;
         const currentUsername = profileData ? profileData.username : 'Joueur';
 
-        // B. AUTO-RÉPARATION : On vérifie si un meilleur score existe dans l'historique daily
-        // (Cela va réparer ton bug actuel dès ta prochaine partie)
         const { data: bestDaily } = await window.sbClient
             .from('daily_scores')
             .select('score')
             .eq('user_id', window.currentUser.id)
             .order('score', { ascending: false })
             .limit(1)
-            .maybeSingle(); // maybeSingle évite l'erreur si vide
+            .maybeSingle(); 
         
         if (bestDaily && bestDaily.score > dbHighScore) {
-            console.log("Bug détecté ! Récupération de l'ancien meilleur score daily:", bestDaily.score);
             dbHighScore = bestDaily.score;
         }
 
-        // C. Calcul des nouvelles valeurs
-        const newHighScore = Math.max(dbHighScore, currentPoints); // On garde le meilleur des deux
+        const newHighScore = Math.max(dbHighScore, currentPoints); 
         const newTotalCoins = dbCoins + coinsEarned;
 
-        // D. Mise à jour locale
         window.highScore = newHighScore;
         coins = newTotalCoins;
         document.getElementById('profileHighScore').textContent = newHighScore;
         updateUI();
 
-        // E. Envoi sécurisé au Serveur (Profil Global)
         await window.sbClient.from('profiles').upsert({
             id: window.currentUser.id,
             username: currentUsername,
@@ -216,7 +224,6 @@ window.endGame = async function() {
             updated_at: new Date()
         });
 
-        // F. Mise à jour Daily (Score du jour)
         const todayStr = new Date().toISOString().split('T')[0];
         const { data: todayData } = await window.sbClient
             .from('daily_scores')
@@ -281,7 +288,7 @@ async function updateLeaderboard() {
 }
 
 // ==========================================
-// 4. BOUTIQUE & INVENTAIRE (SÉPARÉS)
+// 4. BOUTIQUE & INVENTAIRE (AVEC FILTRES)
 // ==========================================
 
 window.loadShopItems = async function() {
@@ -289,28 +296,58 @@ window.loadShopItems = async function() {
     if (data) window.shopItemsCache = data;
 };
 
-// A. BOUTIQUE (ACHAT UNIQUEMENT)
+// --- GESTION DES FILTRES ---
+
+window.filterShop = function(type, btnElement) {
+    currentShopFilter = type;
+    // Visuel des boutons
+    document.querySelectorAll('#shopFilters .filter-btn').forEach(b => b.classList.remove('active'));
+    btnElement.classList.add('active');
+    // Recharger
+    renderShop();
+};
+
+window.filterInventory = function(type, btnElement) {
+    currentInvFilter = type;
+    // Visuel des boutons
+    document.querySelectorAll('#invFilters .filter-btn').forEach(b => b.classList.remove('active'));
+    btnElement.classList.add('active');
+    // Recharger
+    renderInventory();
+};
+
+
+// A. BOUTIQUE
 window.renderShop = async function() {
     const grid = document.getElementById('shopGrid');
     if (!grid) return;
     if (window.shopItemsCache.length === 0) await loadShopItems();
 
-    // On regarde ce qu'on possède
-    let ownedItems = ['skin_default', 'hand_default'];
+    let ownedItems = ['skin_default', 'hand_default', 'skin_black', 'sound_default'];
+    
     if (window.currentUser) {
         const { data } = await window.sbClient.from('inventory').select('item_id').eq('user_id', window.currentUser.id);
         if (data) ownedItems = [...ownedItems, ...data.map(i => i.item_id)];
     }
 
     grid.innerHTML = '';
+    
+    // FILTRE ICI : On filtre par prix ET par type sélectionné
+    const itemsToSell = window.shopItemsCache.filter(item => {
+        const isSellable = item.price > 0;
+        const matchesFilter = (currentShopFilter === 'all') || (item.type === currentShopFilter);
+        return isSellable && matchesFilter;
+    });
 
-    // On affiche QUE les items payants
-    const itemsToSell = window.shopItemsCache.filter(item => item.price > 0);
+    if (itemsToSell.length === 0) {
+        grid.innerHTML = '<p style="grid-column: span 2; text-align:center; color:#888;">Aucun objet dans cette catégorie.</p>';
+        return;
+    }
 
     itemsToSell.forEach(item => {
         const isOwned = ownedItems.includes(item.id);
         const itemDiv = document.createElement('div');
-        itemDiv.className = `shop-item ${isOwned ? 'equipped' : ''}`; // Juste pour griser un peu
+        itemDiv.className = `shop-item ${isOwned ? 'equipped' : ''}`;
 
         const previewHtml = (item.preview_val && item.preview_val.startsWith('fa-')) 
             ? `<div class="item-preview"><i class="${item.preview_val}"></i></div>`
@@ -318,7 +355,6 @@ window.renderShop = async function() {
 
         let buttonHtml;
         if (isOwned) {
-            // Pas de bouton équiper ici, juste "Possédé"
             buttonHtml = `<button class="buy-btn" style="background:#555; cursor:default;" disabled>Possédé</button>`;
         } else {
             buttonHtml = `<button class="buy-btn" onclick="buyItem('${item.id}', ${item.price})">${item.price} <i class="fa-solid fa-coins"></i></button>`;
@@ -329,33 +365,42 @@ window.renderShop = async function() {
     });
 };
 
-// B. INVENTAIRE (ÉQUIPEMENT UNIQUEMENT)
+// B. INVENTAIRE
 window.renderInventory = async function() {
     const grid = document.getElementById('inventoryGrid');
     if (!grid || !window.currentUser) return;
     if (window.shopItemsCache.length === 0) await loadShopItems();
 
-    // Récupération inventaire
-    let ownedIds = ['skin_default', 'hand_default'];
+    let ownedIds = ['skin_default', 'hand_default', 'skin_black', 'sound_default'];
+    
     const { data } = await window.sbClient.from('inventory').select('item_id').eq('user_id', window.currentUser.id);
     if (data) ownedIds = [...ownedIds, ...data.map(i => i.item_id)];
 
-    // Récupération équipement actuel
     const currentSkin = window.userProfile.equipped_skin || 'skin_default';
     const currentBg = window.userProfile.equipped_bg || 'default';
     const currentHand = window.userProfile.equipped_hand || 'hand_default';
+    const currentSound = window.userProfile.equipped_sound || 'sound_default';
 
     grid.innerHTML = '';
 
-    // On filtre : on montre QUE ce qu'on possède
-    const myItems = window.shopItemsCache.filter(item => ownedIds.includes(item.id));
+    // FILTRE ICI : On filtre les items possédés par le type sélectionné
+    const myItems = window.shopItemsCache.filter(item => {
+        const isOwned = ownedIds.includes(item.id);
+        const matchesFilter = (currentInvFilter === 'all') || (item.type === currentInvFilter);
+        return isOwned && matchesFilter;
+    });
+
+    if (myItems.length === 0) {
+        grid.innerHTML = '<p style="grid-column: span 2; text-align:center; color:#888;">Vide...</p>';
+        return;
+    }
 
     myItems.forEach(item => {
         let isEquipped = false;
-        // Vérification par type pour assurer "Un seul de chaque type"
         if (item.type === 'skin' && currentSkin === item.id) isEquipped = true;
         if (item.type === 'bg' && currentBg === item.id) isEquipped = true;
         if (item.type === 'hand' && currentHand === item.id) isEquipped = true;
+        if (item.type === 'sound' && currentSound === item.id) isEquipped = true;
 
         const itemDiv = document.createElement('div');
         itemDiv.className = `shop-item ${isEquipped ? 'equipped' : ''}`;
@@ -381,7 +426,6 @@ window.renderInventory = async function() {
 window.buyItem = async function(itemId, price) {
     if (coins < price) return alert("Pas assez de pièces !");
     
-    // Achat
     const { error: coinErr } = await window.sbClient.from('profiles').update({ coins: coins - price }).eq('id', window.currentUser.id);
     if (coinErr) return alert("Erreur serveur.");
 
@@ -389,8 +433,8 @@ window.buyItem = async function(itemId, price) {
 
     coins -= price;
     updateUI();
-    alert("Achat réussi !");
-    renderShop(); // Refresh boutique pour griser le bouton
+    renderShop(); 
+    renderInventory();
 };
 
 window.equipItem = async function(itemId, type) {
@@ -398,6 +442,7 @@ window.equipItem = async function(itemId, type) {
     if (type === 'skin') update = { equipped_skin: itemId };
     if (type === 'bg') update = { equipped_bg: itemId };
     if (type === 'hand') update = { equipped_hand: itemId };
+    if (type === 'sound') update = { equipped_sound: itemId };
 
     const { error } = await window.sbClient.from('profiles').update(update).eq('id', window.currentUser.id);
 
@@ -405,9 +450,10 @@ window.equipItem = async function(itemId, type) {
         if (type === 'skin') window.userProfile.equipped_skin = itemId;
         if (type === 'bg') window.userProfile.equipped_bg = itemId;
         if (type === 'hand') window.userProfile.equipped_hand = itemId;
+        if (type === 'sound') window.userProfile.equipped_sound = itemId;
         
         applyCosmetics();
-        renderInventory(); // Refresh inventaire pour déplacer le badge "Actif"
+        renderInventory(); 
     }
 };
 
@@ -431,8 +477,33 @@ window.applyCosmetics = function() {
     // 3. FOND
     const bgId = window.userProfile.equipped_bg || 'default';
     const bgItem = window.shopItemsCache.find(i => i.id === bgId);
-    if (bgItem && bgItem.resource_val) document.body.style.backgroundColor = bgItem.resource_val;
-    else document.body.style.backgroundColor = '#727272';
+    
+    document.body.style.backgroundImage = '';
+    document.body.style.backgroundColor = '#727272';
+
+    if (bgItem && bgItem.resource_val) {
+        if (bgItem.resource_val.includes('.')) {
+            document.body.style.backgroundImage = `
+                linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+                url('img/bg/${bgItem.resource_val}')
+            `;
+        } else {
+            document.body.style.backgroundColor = bgItem.resource_val;
+        }
+    }
+
+    // 4. SON
+    const soundId = window.userProfile.equipped_sound || 'sound_default';
+    const audioPlayer = document.getElementById('gameEndSound');
+    const soundItem = window.shopItemsCache.find(i => i.id === soundId);
+    
+    if (audioPlayer) {
+        if (soundItem && soundItem.resource_val) {
+            audioPlayer.src = `audio/${soundItem.resource_val}`;
+        } else {
+            audioPlayer.src = '';
+        }
+    }
 };
 
 // Initialisation

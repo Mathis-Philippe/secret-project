@@ -4,6 +4,12 @@ body {
     overflow: hidden;
     background-color: #727272;
     font-family: Arial, sans-serif;
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    transition: background 0.5s ease;
 }
 
 .timer-container {
@@ -32,25 +38,25 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.85); 
+    background: rgba(0, 0, 0, 0.85);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     color: white;
     z-index: 200;
-    overflow: hidden; 
+    overflow: hidden;
 }
 
-.game-over-screen h1 { 
-    font-size: 3em; 
-    margin-bottom: 20px; 
-    text-transform: uppercase; 
+.game-over-screen h1 {
+    font-size: 3em;
+    margin-bottom: 20px;
+    text-transform: uppercase;
 }
 
-.game-over-screen p { 
-    font-size: 1.5em; 
-    margin: 10px 0; 
+.game-over-screen p {
+    font-size: 1.5em;
+    margin: 10px 0;
 }
 
 .game-over-screen button {
@@ -65,12 +71,12 @@ body {
     font-weight: bold;
 }
 
-.game-over-screen button:hover { 
-    background-color: #26af61; 
+.game-over-screen button:hover {
+    background-color: #26af61;
 }
 
-.hidden { 
-    display: none !important; 
+.hidden {
+    display: none !important;
 }
 
 .zizi {
@@ -89,7 +95,7 @@ body {
 
 #ziziFast {
     opacity: 0;
-    z-index: 2; 
+    z-index: 2;
 }
 
 #ziziNormal {
@@ -114,31 +120,38 @@ body {
     top: 10%;
     left: 80%;
     transform: translateX(-50%);
-    font-size: 2em;
-    color: #333;
-    font-family: Arial, sans-serif;
+    color: #ffffff;
+    font-family: "BBH Bartle" ,Arial, sans-serif;
+    font-size: 1.75em;
+    width: max-content;
+    padding: 0.7em 1em;
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 .side-menu {
     position: fixed;
     top: 0;
     left: 0;
-    width: 300px; /* Largeur du menu */
+    width: 300px;
+    /* Largeur du menu */
     height: 100vh;
-    background-color: rgba(30, 30, 30, 0.95); /* Fond sombre semi-transparent */
+    background-color: rgba(30, 30, 30, 0.95);
+    /* Fond sombre semi-transparent */
     backdrop-filter: blur(5px);
     color: white;
     padding: 20px;
     box-sizing: border-box;
-    
+
     /* Animation de glissement */
-    transform: translateX(-120%); 
+    transform: translateX(-120%);
     transition: transform 0.3s ease-in-out;
-    
-    z-index: 300; /* Au-dessus de tout (même du Game Over qui est à 200) */
+
+    z-index: 300;
+    /* Au-dessus de tout (même du Game Over qui est à 200) */
     border-right: 2px solid #ff4757;
-    box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
     font-family: Arial, sans-serif;
+    overflow: auto;
 }
 
 /* Classe pour afficher le menu */
@@ -165,11 +178,15 @@ body {
     font-size: 2em;
     cursor: pointer;
 }
-.close-btn:hover { color: white; }
+
+.close-btn:hover {
+    color: white;
+}
 
 /* Styles spécifiques au Profil */
 .avatar-circle {
-    width: 80px; height: 80px;
+    width: 80px;
+    height: 80px;
     background: #555;
     border-radius: 50%;
     margin: 20px auto;
@@ -178,6 +195,7 @@ body {
     align-items: center;
     font-size: 2em;
 }
+
 .action-btn {
     width: 100%;
     padding: 10px;
@@ -189,6 +207,7 @@ body {
     cursor: pointer;
     border-radius: 5px;
 }
+
 .logout-btn {
     background: #555;
     color: white;
@@ -198,6 +217,7 @@ body {
     margin-top: 20px;
     width: 100%;
 }
+
 input {
     width: 100%;
     padding: 10px;
@@ -207,11 +227,43 @@ input {
     border: none;
 }
 
+.filter-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    background: #444;
+    border: 1px solid #666;
+    color: #ccc;
+    padding: 5px 10px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover {
+    background: #555;
+    color: white;
+}
+
+.filter-btn.active {
+    background: #3498db; /* Bleu style "Equiper" */
+    color: white;
+    border-color: #3498db;
+    font-weight: bold;
+}
+
 /* Styles spécifiques au Classement */
 .leaderboard-list {
     list-style: none;
     padding: 0;
 }
+
 .leaderboard-list li {
     display: flex;
     justify-content: space-between;
@@ -219,9 +271,18 @@ input {
     border-bottom: 1px solid #444;
     font-weight: bold;
 }
-.leaderboard-list li:nth-child(1) { color: gold; }
-.leaderboard-list li:nth-child(2) { color: silver; }
-.leaderboard-list li:nth-child(3) { color: #cd7f32; }
+
+.leaderboard-list li:nth-child(1) {
+    color: gold;
+}
+
+.leaderboard-list li:nth-child(2) {
+    color: silver;
+}
+
+.leaderboard-list li:nth-child(3) {
+    color: #cd7f32;
+}
 
 .leaderboard-tabs {
     display: flex;
@@ -261,17 +322,20 @@ input {
     padding: 10px;
     border-radius: 10px;
 }
+
 .shop-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
 }
+
 .shop-item {
     background: #444;
     padding: 10px;
     border-radius: 10px;
     text-align: center;
 }
+
 .item-preview {
     height: 50px;
     width: 50px;
@@ -282,6 +346,7 @@ input {
     justify-content: center;
     align-items: center;
 }
+
 .buy-btn {
     background: #2ed573;
     border: none;
@@ -292,7 +357,10 @@ input {
     width: 100%;
     font-size: 0.9em;
 }
-.buy-btn:hover { background: #26af61; }
+
+.buy-btn:hover {
+    background: #26af61;
+}
 
 
 .menu-buttons {
@@ -300,37 +368,46 @@ input {
     top: 20px;
     left: 20px;
     display: flex;
-    flex-direction: column; /* Vertical */
-    gap: 15px; /* Espacement entre les bulles */
+    flex-direction: column;
+    /* Vertical */
+    gap: 15px;
+    /* Espacement entre les bulles */
     z-index: 150;
 }
 
 /* Style des boutons ronds */
 .menu-buttons button {
-    width: 50px;      /* Largeur fixe */
-    height: 50px;     /* Hauteur identique pour faire un carré/rond */
-    border-radius: 50%; /* C'est ça qui fait le rond parfait */
-    padding: 0;       /* Important pour le centrage */
-    
+    width: 50px;
+    /* Largeur fixe */
+    height: 50px;
+    /* Hauteur identique pour faire un carré/rond */
+    border-radius: 50%;
+    /* C'est ça qui fait le rond parfait */
+    padding: 0;
+    /* Important pour le centrage */
+
     background-color: #333;
     border: 2px solid #fff;
     color: #fff;
-    font-size: 1.4em; /* Taille de l'icône */
-    
+    font-size: 1.4em;
+    /* Taille de l'icône */
+
     /* Centrage parfait de l'icône */
     display: flex;
     justify-content: center;
     align-items: center;
-    
+
     cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     transition: transform 0.1s, background-color 0.2s;
 }
 
 /* Effet au survol */
 .menu-buttons button:hover {
-    background-color: #ff4757; /* Rouge */
-    transform: scale(1.1);     /* Grossit un peu */
+    background-color: #ff4757;
+    /* Rouge */
+    transform: scale(1.1);
+    /* Grossit un peu */
 }
 
 .menu-buttons button:active {
@@ -353,11 +430,11 @@ input {
     height: 480px;
     background: radial-gradient(circle at 30% 30%, #ffffff 20%, #f0f0f0 60%, #e0e0e0 100%);
     border-radius: 48% 52% 41% 59% / 56% 46% 54% 44%;
-    box-shadow: 
+    box-shadow:
         inset 10px 10px 20px rgba(255, 255, 255, 1),
-        inset -10px -20px 30px rgba(0, 0, 0, 0.05); 
+        inset -10px -20px 30px rgba(0, 0, 0, 0.05);
     z-index: -1;
-    animation: splatMain 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    animation: splatMain 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
 .yogurt-background::after {
@@ -369,8 +446,8 @@ input {
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: transparent; 
-    box-shadow: 
+    background: transparent;
+    box-shadow:
         -360px -180px 0 18px #f9f9f9,
         -190px -230px 0 8px #ffffff,
         -320px 190px 0 22px #eeeeee,
@@ -384,40 +461,62 @@ input {
         300px -120px 0 3px #ffffff,
         80px -200px 0 5px #f5f5f5;
     z-index: -1;
-    animation: splatDrops 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards 0.05s;
+    animation: splatDrops 3.6s cubic-bezier(0.25, 1, 0.5, 1) forwards 0.05s;
 }
 
 @keyframes splatMain {
-    0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 0.5; }
-    60% { transform: translate(-50%, -50%) scale(1.05) rotate(5deg); opacity: 1; }
-    100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+    0% {
+        transform: translate(-50%, -50%) scale(0) rotate(0deg);
+        opacity: 0.5;
+    }
+
+    60% {
+        transform: translate(-50%, -50%) scale(1.05) rotate(5deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        opacity: 1;
+    }
 }
 
 @keyframes splatDrops {
-    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-    70% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
-    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+    }
+
+    70% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
 }
 
-.yogurt-background h1, 
+.yogurt-background h1,
 .yogurt-background p,
 .yogurt-background span {
-    color: #ff4757; 
-    text-shadow: 
+    color: #ff4757;
+    text-shadow:
         2px 2px 0 #ffffff,
-        -1px -1px 0 #ffffff, 
+        -1px -1px 0 #ffffff,
         1px -1px 0 #ffffff,
         -1px 1px 0 #ffffff,
         1px 1px 0 #ffffff;
-    z-index: 10; 
+    z-index: 10;
     font-weight: bold;
 }
 
 .yogurt-background button {
-    background-color: #333; 
+    background-color: #333;
     color: white;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-    border: 2px solid white; 
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    border: 2px solid white;
     z-index: 10;
 }
 
@@ -432,7 +531,9 @@ input {
     font-size: 0.9em;
 }
 
-.equip-btn:hover { background: #2980b9; }
+.equip-btn:hover {
+    background: #2980b9;
+}
 
 
 .shop-item.equipped {
@@ -445,16 +546,18 @@ input {
     top: 70%;
     left: 80%;
     transform: translate(-50%, -50%);
-    
+
     font-size: 4em;
     font-weight: bold;
-    color: #ffd700; /* Or */
-    text-shadow: 
+    color: #ffd700;
+    /* Or */
+    text-shadow:
         2px 2px 0 #000,
-        0 0 20px rgba(255, 215, 0, 0.5); /* Lueur dorée */
-    
+        0 0 20px rgba(255, 215, 0, 0.5);
+    /* Lueur dorée */
+
     z-index: 300;
-    pointer-events: none; 
+    pointer-events: none;
     white-space: nowrap;
 }
 
@@ -467,19 +570,26 @@ input {
         opacity: 0;
         transform: translate(-50%, -50%) scale(0.5);
     }
+
     15% {
         opacity: 1;
-        transform: translate(-50%, -60%) scale(1.2); /* Léger rebond */
+        transform: translate(-50%, -60%) scale(1.2);
+        /* Léger rebond */
     }
+
     30% {
         transform: translate(-50%, -60%) scale(1);
     }
+
     80% {
         opacity: 1;
-        transform: translate(-50%, -80%); /* Monte doucement */
+        transform: translate(-50%, -80%);
+        /* Monte doucement */
     }
+
     100% {
         opacity: 0;
-        transform: translate(-50%, -100%); /* Disparait vers le haut */
+        transform: translate(-50%, -100%);
+        /* Disparait vers le haut */
     }
 }

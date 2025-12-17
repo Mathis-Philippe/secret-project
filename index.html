@@ -1,28 +1,34 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=BBH+Bartle&display=swap" rel="stylesheet">
+
+
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    
+
     <title>Branlez moi svp</title>
 </head>
+
 <body>
     <div class="menu-buttons">
         <button id="btnProfile" title="Profil"><i class="fa-solid fa-user"></i></button>
         <button id="btnLeaderboard" title="Classement"><i class="fa-solid fa-trophy"></i></button>
         <button id="btnShop" title="Boutique"><i class="fa-solid fa-store"></i></button>
     </div>
-    
+
     <div id="sideMenus" class="side-menus-container">
 
         <div id="menuProfile" class="side-menu">
             <button class="close-btn" onclick="closeAllMenus()">&times;</button>
             <h2>Profil Joueur</h2>
-            
+
             <div id="loginSection">
                 <p>Connecte-toi pour sauvegarder ta progression !</p>
                 <input type="text" id="emailInput" placeholder="Email (ex: moi@gmail.com)">
@@ -35,25 +41,34 @@
                 <input type="text" id="pseudoInput" placeholder="Ton pseudo">
                 <button onclick="setUsername()" class="action-btn">Valider</button>
             </div>
-    
+
             <div id="profileInfo" class="hidden">
                 <div class="avatar-circle"><i class="fa-solid fa-user"></i></div>
                 <h3 id="displayUsername">Pseudo</h3>
                 <p>Meilleur Score : <span id="profileHighScore">0</span></p>
                 <p>Pièces : <span id="userCoins">0</span> <i class="fa-solid fa-coins"></i></p>
-                
+
                 <hr style="border: 0; border-top: 1px solid #555; margin: 15px 0;">
                 <h4 style="text-align:center; margin-bottom:10px;">Mon Inventaire</h4>
+                
+                <div class="filter-tabs" id="invFilters">
+                    <button class="filter-btn active" onclick="filterInventory('all', this)">Tout</button>
+                    <button class="filter-btn" onclick="filterInventory('skin', this)">Skins</button>
+                    <button class="filter-btn" onclick="filterInventory('hand', this)">Mains</button>
+                    <button class="filter-btn" onclick="filterInventory('bg', this)">Fonds</button>
+                    <button class="filter-btn" onclick="filterInventory('sound', this)">Sons</button>
+                </div>
+
                 <div id="inventoryGrid" class="shop-grid"></div>
 
                 <button onclick="logoutUser()" class="logout-btn">Déconnexion</button>
             </div>
         </div>
-    
+
         <div id="menuLeaderboard" class="side-menu">
             <button class="close-btn" onclick="closeAllMenus()">&times;</button>
             <h2>Classement</h2>
-            
+
             <div class="leaderboard-tabs">
                 <button id="tabGlobal" class="tab-btn active" onclick="switchLeaderboard('global')">🏆 Global</button>
                 <button id="tabDaily" class="tab-btn" onclick="switchLeaderboard('daily')">📅 Aujourd'hui</button>
@@ -63,7 +78,7 @@
                 <li>Chargement...</li>
             </ul>
         </div>
-    
+
         <div id="menuShop" class="side-menu">
             <button class="close-btn" onclick="closeAllMenus()">&times;</button>
             <h2>Boutique</h2>
@@ -71,9 +86,17 @@
                 Solde : <span id="shopCoins">0</span> <i class="fa-solid fa-coins" style="color:gold;"></i>
             </div>
             
+            <div class="filter-tabs" id="shopFilters">
+                <button class="filter-btn active" onclick="filterShop('all', this)">Tout</button>
+                <button class="filter-btn" onclick="filterShop('skin', this)">Skins</button>
+                <button class="filter-btn" onclick="filterShop('hand', this)">Mains</button>
+                <button class="filter-btn" onclick="filterShop('bg', this)">Fonds</button>
+                <button class="filter-btn" onclick="filterShop('sound', this)">Sons</button>
+            </div>
+            
             <div id="shopGrid" class="shop-grid"></div>
         </div>
-    
+
     </div>
 
     <div class="timer-container">
@@ -90,17 +113,19 @@
         <img class="MainSvg" src="img/fist.png" alt="ma main" id="handImage">
     </div>
     <div id="gameOverScreen" class="game-over-screen hidden">
-        <h1>AHHHH J'AI JOUIS</h1>
+        <h1>AHHHH J'AI JOUIR</h1>
         <p>Ton score : <span id="finalScore">0</span></p>
         <p>Meilleur score : <span id="bestScore">0</span></p>
         <button onclick="restartGame()">REJOUER</button>
     </div>
 
     <div id="coinAnimation" class="coin-animation hidden"></div>
+    <audio id="gameEndSound" preload="auto"></audio>
 
     <script src="js/script.js"></script>
     <script src="js/index.js"></script>
     <script src="js/menu.js"></script>
 
 </body>
+
 </html>

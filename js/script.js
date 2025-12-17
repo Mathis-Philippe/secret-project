@@ -3,7 +3,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 window.sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-window.currentUser = null; 
+window.currentUser = null;
 window.userProfile = null;
 
 const main = document.getElementById('main');
@@ -46,8 +46,8 @@ function endGame() {
     }
 
     // On remplit les scores dans l'HTML
-    if(finalScoreSpan) finalScoreSpan.textContent = point;
-    if(bestScoreSpan) bestScoreSpan.textContent = highScore;
+    if (finalScoreSpan) finalScoreSpan.textContent = point;
+    if (bestScoreSpan) bestScoreSpan.textContent = highScore;
 
     // AFFICHER L'ÉCRAN DE FIN + EFFET YAOURT
     // C'est ici que ça plantait avant si gameOverScreen n'était pas défini
@@ -66,18 +66,18 @@ function restartGame() {
     timeLeft = GAME_DURATION;
     isGameOver = false;
     gameStarted = false;
-    
+
     // Reset visuel
     displayScore.textContent = `Score : 0`;
-    displayScore.style.color = "#333";
+    displayScore.style.color = "#ffffff";
     timerBar.style.width = '100%';
-    
+
     // CACHER L'ÉCRAN DE FIN
     if (gameOverScreen) {
         gameOverScreen.classList.add('hidden');
         gameOverScreen.classList.remove('yogurt-background');
     }
-    
+
     ziziFast.style.opacity = "0";
     ziziNormal.style.opacity = "1";
     lastClickTime = Date.now();
@@ -88,7 +88,7 @@ window.restartGame = restartGame;
 function startTimer() {
     gameStarted = true;
     const startTime = Date.now();
-    
+
     if (timerInterval) clearInterval(timerInterval);
 
     timerInterval = setInterval(() => {
@@ -96,10 +96,10 @@ function startTimer() {
         timeLeft = GAME_DURATION - elapsed;
 
         const percentage = (timeLeft / GAME_DURATION) * 100;
-        if(timerBar) timerBar.style.width = `${percentage}%`;
+        if (timerBar) timerBar.style.width = `${percentage}%`;
 
         if (timeLeft <= 0) {
-            if(timerBar) timerBar.style.width = `0%`;
+            if (timerBar) timerBar.style.width = `0%`;
             window.endGame();
         }
     }, 50);
