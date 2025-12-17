@@ -148,14 +148,24 @@ window.logoutUser = async function() {
     coins = 100; 
     window.highScore = 0;
     
+    // --- NOUVEAU : On vide les formulaires ---
+    document.getElementById('pseudoInput').value = ""; 
+    document.getElementById('emailInput').value = "";
+    document.getElementById('passwordInput').value = "";
+    // -----------------------------------------
+
     document.getElementById('loginSection').classList.remove('hidden');
     document.getElementById('profileInfo').classList.add('hidden');
+    // On s'assure aussi que la section de choix de pseudo est cachée si on se déconnecte pendant l'inscription
+    document.getElementById('selectPseudo').classList.add('hidden'); 
     
     // Reset visuel
     document.getElementById('ziziNormal').src = 'img/penis.png';
+    document.body.style.backgroundImage = ''; // On reset aussi le fond
     document.body.style.backgroundColor = '#727272';
     document.getElementById('handImage').src = 'img/fist.png';
-    document.getElementById('gameEndSound').src = '';
+    const audioPlayer = document.getElementById('gameEndSound');
+    if(audioPlayer) audioPlayer.src = '';
     
     updateUI();
 };
@@ -262,12 +272,17 @@ async function updateLeaderboard() {
     if (currentLeaderboardTab === 'daily') {
         const todayStr = new Date().toISOString().split('T')[0];
         query = window.sbClient.from('daily_scores')
-            .select('username, score').eq('played_at', todayStr)
-            .order('score', { ascending: false }).limit(100);
+            .select('username, score')
+            .eq('played_at', todayStr)
+            .gt('score', 0) // AJOUT : Score doit être > 0
+            .order('score', { ascending: false })
+            .limit(100);
     } else {
         query = window.sbClient.from('profiles')
             .select('username, high_score')
-            .order('high_score', { ascending: false }).limit(100);
+            .gt('high_score', 0) // AJOUT : Score doit être > 0
+            .order('high_score', { ascending: false })
+            .limit(100);
     }
 
     const { data } = await query;
@@ -347,7 +362,8 @@ window.renderShop = async function() {
     itemsToSell.forEach(item => {
         const isOwned = ownedItems.includes(item.id);
         const itemDiv = document.createElement('div');
-        itemDiv.className = `shop-item ${isOwned ? 'equipped' : ''}`;
+        const rarityClass = `rarity-${item.rarity || 'common'}`;
+                itemDiv.className = `shop-item ${isOwned ? 'equipped' : ''} ${rarityClass}`;
 
         const previewHtml = (item.preview_val && item.preview_val.startsWith('fa-')) 
             ? `<div class="item-preview"><i class="${item.preview_val}"></i></div>`
@@ -359,8 +375,11 @@ window.renderShop = async function() {
         } else {
             buttonHtml = `<button class="buy-btn" onclick="buyItem('${item.id}', ${item.price})">${item.price} <i class="fa-solid fa-coins"></i></button>`;
         }
-
-        itemDiv.innerHTML = `${previewHtml}<p>${item.name}</p>${buttonHtml}`;
+        itemDiv.innerHTML = `
+            ${previewHtml}
+            <p style="margin:5px 0; font-weight:bold;">${item.name}</p>
+            ${buttonHtml}
+        `;
         grid.appendChild(itemDiv);
     });
 };
@@ -403,7 +422,8 @@ window.renderInventory = async function() {
         if (item.type === 'sound' && currentSound === item.id) isEquipped = true;
 
         const itemDiv = document.createElement('div');
-        itemDiv.className = `shop-item ${isEquipped ? 'equipped' : ''}`;
+        const rarityClass = `rarity-${item.rarity || 'common'}`;
+        itemDiv.className = `shop-item ${isEquipped ? 'equipped' : ''} ${rarityClass}`;
         
         const previewHtml = (item.preview_val && item.preview_val.startsWith('fa-')) 
             ? `<div class="item-preview"><i class="${item.preview_val}"></i></div>`
@@ -414,7 +434,7 @@ window.renderInventory = async function() {
         
         itemDiv.innerHTML = `
             ${previewHtml}
-            <p style="font-size:0.8em; margin:5px 0;">${item.name}</p>
+            <p style="font-size:0.8em; margin:5px 0; font-weight:bold;">${item.name}</p>
             <button class="action-btn" style="width:100%; padding:5px; ${btnStyle}" 
                 onclick="equipItem('${item.id}', '${item.type}')" 
                 ${isEquipped ? 'disabled' : ''}>${btnText}</button>

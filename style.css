@@ -334,6 +334,55 @@ input {
     padding: 10px;
     border-radius: 10px;
     text-align: center;
+    position: relative;
+    border: 2px solid transparent; 
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.shop-item:hover {
+    transform: translateY(-3px);
+}
+
+.rarity-common {
+    border-color: #95a5a6;
+}
+
+.rarity-rare {
+    border-color: #3498db;
+    background: linear-gradient(135deg, #444 60%, #2c3e50 100%);
+    box-shadow: 0 0 5px #3498db;
+}
+
+.rarity-epic {
+    border-color: #9b59b6;
+    background: linear-gradient(135deg, #444 60%, #4a235a 100%);
+    box-shadow: 0 0 10px #9b59b6;
+}
+
+.rarity-legendary {
+    border-color: #f1c40f;
+    background: linear-gradient(135deg, #444 60%, #7f6000 100%);
+    box-shadow: 0 0 15px #f1c40f;
+    animation: legendaryGlow 2s infinite alternate;
+}
+
+@keyframes legendaryGlow {
+    from { box-shadow: 0 0 10px #f1c40f; }
+    to { box-shadow: 0 0 25px #f39c12; border-color: #f39c12; }
+}
+
+.rarity-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 0.7em;
+    padding: 2px 6px;
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    background: #333;
+    border: 1px solid white;
 }
 
 .item-preview {
@@ -592,4 +641,22 @@ input {
         transform: translate(-50%, -100%);
         /* Disparait vers le haut */
     }
+}
+
+.shake-mode {
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both infinite;
+}
+
+@keyframes shake {
+    10%, 90% { transform: translate3d(-2px, 0, 0); }
+    20%, 80% { transform: translate3d(4px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+    40%, 60% { transform: translate3d(6px, 0, 0); }
+}
+
+/* L'effet de flammes sur le zizi */
+.fire-mode {
+    /* Double ombre portée pour faire un effet de feu */
+    filter: drop-shadow(0px -10px 10px orange) drop-shadow(0px -20px 30px red) !important;
+    transition: filter 0.2s ease;
 }
