@@ -736,3 +736,83 @@ input:focus {
     text-shadow: 0 0 10px #ff4757;
 }
 
+@media (max-width: 768px) {
+    /* 1. Menus prennent toute la largeur sur mobile */
+    .side-menu {
+        width: 100%;
+        transform: translateX(-100%);
+        padding: 15px;
+        padding-top: 60px;
+    }
+    
+    /* 2. Ajustement de la taille de la main */
+    .MainSvg {
+        width: 14em; 
+        height: 14em;
+    }
+
+    /* 3. Limite la taille du zizi pour qu'il reste dans l'écran */
+    .zizi img {
+        max-height: 55vh;
+        max-width: 85vw;
+    }
+
+    /* 4. Repositionnement du Score : Au centre, sous la barre de temps */
+    .scoreDisplay {
+        top: 45px; /* Sous la barre de 20px + marge */
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        font-size: 1.4em;
+        background-color: rgba(0, 0, 0, 0.4);
+        padding: 5px 15px;
+        width: auto;
+        white-space: nowrap;
+    }
+
+    /* 5. Boutons de menu plus compacts mais accessibles */
+    .menu-buttons {
+        top: 15px;
+        left: 10px;
+        gap: 10px;
+    }
+    
+    .menu-buttons button {
+        width: 42px;
+        height: 42px;
+        font-size: 1em;
+    }
+
+    /* 6. Mots flottants plus petits */
+    .floating-word {
+        font-size: 1.5em;
+        padding: 5px 10px;
+    }
+
+    /* 7. Game Over Screen adapté */
+    .game-over-screen h1 {
+        font-size: 2.2em;
+    }
+
+    /* 8. Filtres de la boutique en défilement horizontal si trop nombreux */
+    .filter-tabs {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding-bottom: 5px;
+        -webkit-overflow-scrolling: touch; /* Scroll fluide sur iOS */
+    }
+    
+    .filter-btn {
+        flex: 0 0 auto; /* Empêche l'écrasement */
+    }
+}
+
+/* Pour les très petits écrans (iPhone SE, vieux Androids) */
+@media (max-width: 380px) {
+    .MainSvg { width: 11em; height: 11em; }
+    .scoreDisplay { font-size: 1.1em; top: 40px; }
+    .game-over-screen h1 { font-size: 1.8em; }
+    .shop-grid { gap: 8px; }
+}
