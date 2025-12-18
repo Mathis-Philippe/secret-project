@@ -56,14 +56,18 @@ document.getElementById('btnShop').addEventListener('click', () => {
 
 function toggleMenu(menu) {
     const isActive = menu.classList.contains('active');
-    closeAllMenus();
-    if (!isActive) menu.classList.add('active');
+    closeAllMenus(); // Ferme tout d'abord
+    if (!isActive) menu.classList.add('active'); // Ouvre celui demandé
 }
 
-function closeAllMenus() {
+// 4. RENDRE CETTE FONCTION GLOBALE ET EXPLICITE
+window.closeAllMenus = function() {
     menuProfile.classList.remove('active');
     menuLeaderboard.classList.remove('active');
     menuShop.classList.remove('active');
+    
+    // Petite astuce : on enlève le focus des boutons pour éviter qu'ils restent sélectionnés
+    document.activeElement.blur();
 }
 
 function updateUI() {
@@ -163,32 +167,28 @@ async function handleLoginSuccess(user) {
         document.getElementById('profileHighScore').textContent = window.highScore;
         
         updateUI();
-        await calculateBonuses(); // Calcul basé sur l'équipement
+        await calculateBonuses(); 
         applyCosmetics(); 
         renderInventory(); 
     }
 }
 
-// --- NOUVEAU CALCUL DES BONUS (BASÉ SUR L'ÉQUIPEMENT) ---
+// --- CALCUL DES BONUS (BASÉ SUR L'ÉQUIPEMENT) ---
 window.calculateBonuses = async function() {
     if (!window.userProfile) return;
 
-    // Reset
     window.activeBonuses = { clickPower: 0, timeAdd: 0, hasSuperFire: false };
 
-    // 1. Bonus de Clic Équipé
     const equippedClick = window.userProfile.equipped_bonus_click;
     if (equippedClick && ITEM_EFFECTS[equippedClick]) {
         window.activeBonuses.clickPower = ITEM_EFFECTS[equippedClick].value;
     }
 
-    // 2. Bonus de Temps Équipé
     const equippedTime = window.userProfile.equipped_bonus_time;
     if (equippedTime && ITEM_EFFECTS[equippedTime]) {
         window.activeBonuses.timeAdd = ITEM_EFFECTS[equippedTime].value;
     }
 
-    // 3. Spécial Équipé
     const equippedSpecial = window.userProfile.equipped_special;
     if (equippedSpecial && ITEM_EFFECTS[equippedSpecial]) {
         if (ITEM_EFFECTS[equippedSpecial].value === '5x_mode') {
@@ -230,22 +230,18 @@ window.logoutUser = async function() {
 // ==========================================
 
 window.endGame = async function() {
-    // 1. Lancement de la fin de jeu visuelle (affiche le score local temporairement)
     window.originalEndGame(); 
 
-    // 2. Son de fin
     const audioPlayer = document.getElementById('gameEndSound');
     if (audioPlayer && audioPlayer.src) {
         audioPlayer.currentTime = 0;
         audioPlayer.play().catch(e => console.log("Erreur audio:", e));
     }
 
-    // 3. Calcul des gains
     const scoreText = document.getElementById('finalScore').textContent;
     const currentPoints = parseInt(scoreText) || 0;
     const coinsEarned = Math.floor(currentPoints * 0.64);
     
-    // Animation pièces
     const animDiv = document.getElementById('coinAnimation');
     if (animDiv && coinsEarned > 0) {
         animDiv.innerHTML = `+ ${coinsEarned} <i class="fa-solid fa-coins"></i>`;
@@ -254,9 +250,7 @@ window.endGame = async function() {
         setTimeout(() => animDiv.classList.add('hidden'), 2500);
     }
 
-    // 4. Sauvegarde et Correction de l'affichage du Meilleur Score
     if (window.currentUser) {
-        // On récupère les infos à jour depuis la base de données
         const { data: profileData } = await window.sbClient
             .from('profiles')
             .select('high_score, coins, username')
@@ -267,7 +261,6 @@ window.endGame = async function() {
         let dbCoins = profileData ? profileData.coins : 0;
         const currentUsername = profileData ? profileData.username : 'Joueur';
 
-        // Vérification Daily Score (au cas où il serait meilleur que le global)
         const { data: bestDaily } = await window.sbClient
             .from('daily_scores')
             .select('score')
@@ -280,26 +273,18 @@ window.endGame = async function() {
             dbHighScore = bestDaily.score;
         }
 
-        // Le VRAI meilleur score est le max entre celui de la DB et celui qu'on vient de faire
         const newHighScore = Math.max(dbHighScore, currentPoints); 
         const newTotalCoins = dbCoins + coinsEarned;
 
-        // Mise à jour des variables globales
         window.highScore = newHighScore;
         coins = newTotalCoins;
-        
-        // Mise à jour de l'UI du Menu Profil
         document.getElementById('profileHighScore').textContent = newHighScore;
         updateUI();
 
-        // --- CORRECTION ICI : ON MET À JOUR L'ÉCRAN GAME OVER ---
+        // Affichage correct dans le Game Over
         const gameOverBestScore = document.getElementById('bestScore');
-        if (gameOverBestScore) {
-            gameOverBestScore.textContent = newHighScore;
-        }
-        // -------------------------------------------------------
+        if (gameOverBestScore) gameOverBestScore.textContent = newHighScore;
 
-        // Sauvegarde en base de données
         await window.sbClient.from('profiles').upsert({
             id: window.currentUser.id,
             username: currentUsername,
@@ -308,7 +293,6 @@ window.endGame = async function() {
             updated_at: new Date()
         });
 
-        // Gestion du Daily Score
         const todayStr = new Date().toISOString().split('T')[0];
         const { data: todayData } = await window.sbClient
             .from('daily_scores')
@@ -391,7 +375,6 @@ window.loadShopItems = async function() {
 function checkFilter(itemType, filter) {
     if (filter === 'all') return true;
     if (filter === 'bonus') {
-        // Le filtre "Bonus" regroupe les 3 types de bonus
         return itemType === 'bonus_click' || itemType === 'bonus_time' || itemType === 'special';
     }
     return itemType === filter;
@@ -463,7 +446,7 @@ window.renderShop = async function() {
     });
 };
 
-// B. INVENTAIRE (AVEC BOUTONS EQUIPER POUR LES BONUS)
+// B. INVENTAIRE
 window.renderInventory = async function() {
     const grid = document.getElementById('inventoryGrid');
     if (!grid || !window.currentUser) return;
@@ -474,13 +457,11 @@ window.renderInventory = async function() {
     const { data } = await window.sbClient.from('inventory').select('item_id').eq('user_id', window.currentUser.id);
     if (data) ownedIds = [...ownedIds, ...data.map(i => i.item_id)];
 
-    // Récupération des objets équipés actuels
     const currentSkin = window.userProfile.equipped_skin || 'skin_default';
     const currentBg = window.userProfile.equipped_bg || 'default';
     const currentHand = window.userProfile.equipped_hand || 'hand_default';
     const currentSound = window.userProfile.equipped_sound || 'sound_default';
     
-    // Nouveaux équipements
     const currentBonusClick = window.userProfile.equipped_bonus_click;
     const currentBonusTime = window.userProfile.equipped_bonus_time;
     const currentSpecial = window.userProfile.equipped_special;
@@ -501,13 +482,10 @@ window.renderInventory = async function() {
     myItems.forEach(item => {
         let isEquipped = false;
         
-        // Vérification générique
         if (item.id === currentSkin) isEquipped = true;
         if (item.id === currentBg) isEquipped = true;
         if (item.id === currentHand) isEquipped = true;
         if (item.id === currentSound) isEquipped = true;
-        
-        // Vérification des bonus
         if (item.id === currentBonusClick) isEquipped = true;
         if (item.id === currentBonusTime) isEquipped = true;
         if (item.id === currentSpecial) isEquipped = true;
@@ -523,7 +501,6 @@ window.renderInventory = async function() {
         let btnStyle = isEquipped ? 'background:#2ed573; border:none;' : 'background:#3498db; border:none;';
         let btnText = isEquipped ? 'Actif' : 'Équiper';
         
-        // On passe item.type pour que la fonction equipItem sache dans quelle colonne enregistrer
         itemDiv.innerHTML = `
             ${previewHtml}
             <p>${item.name}</p>
@@ -552,13 +529,11 @@ window.buyItem = async function(itemId, price) {
 window.equipItem = async function(itemId, type) {
     let update = {};
     
-    // Mapping des types vers les colonnes de la BDD
     if (type === 'skin') update = { equipped_skin: itemId };
     if (type === 'bg') update = { equipped_bg: itemId };
     if (type === 'hand') update = { equipped_hand: itemId };
     if (type === 'sound') update = { equipped_sound: itemId };
     
-    // Nouveaux types (Bonus)
     if (type === 'bonus_click') update = { equipped_bonus_click: itemId };
     if (type === 'bonus_time') update = { equipped_bonus_time: itemId };
     if (type === 'special') update = { equipped_special: itemId };
@@ -566,7 +541,6 @@ window.equipItem = async function(itemId, type) {
     const { error } = await window.sbClient.from('profiles').update(update).eq('id', window.currentUser.id);
 
     if (!error) {
-        // Mise à jour locale pour affichage immédiat
         if (type === 'skin') window.userProfile.equipped_skin = itemId;
         if (type === 'bg') window.userProfile.equipped_bg = itemId;
         if (type === 'hand') window.userProfile.equipped_hand = itemId;
@@ -576,7 +550,6 @@ window.equipItem = async function(itemId, type) {
         if (type === 'bonus_time') window.userProfile.equipped_bonus_time = itemId;
         if (type === 'special') window.userProfile.equipped_special = itemId;
         
-        // On recalcule les bonus (important !)
         await calculateBonuses();
         
         applyCosmetics();
