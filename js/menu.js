@@ -7,7 +7,34 @@ let currentLeaderboardTab = 'global';
 let coins = 100;
 window.shopItemsCache = []; 
 
-// NOUVEAU : Variables pour les filtres
+// Variables pour les bonus actifs (calculés selon l'équipement)
+window.activeBonuses = {
+    clickPower: 0,
+    timeAdd: 0,
+    hasSuperFire: false
+};
+
+// Configuration des effets par ID d'objet
+const ITEM_EFFECTS = {
+    // Bonus de Clic (Type: bonus_click)
+    'boost_click_1': { type: 'click', value: 1 },
+    'boost_click_2': { type: 'click', value: 2 },
+    'boost_click_3': { type: 'click', value: 5 },
+    'boost_click_4': { type: 'click', value: 10 },
+    'boost_click_5': { type: 'click', value: 25 },
+
+    // Bonus de Temps (Type: bonus_time)
+    'boost_time_1': { type: 'time', value: 2000 },
+    'boost_time_2': { type: 'time', value: 5000 },
+    'boost_time_3': { type: 'time', value: 8000 },
+    'boost_time_4': { type: 'time', value: 12000 },
+    'boost_time_5': { type: 'time', value: 20000 },
+
+    // Spécial (Type: special)
+    'special_fire_5x': { type: 'special', value: '5x_mode' } 
+};
+
+// Filtres
 let currentShopFilter = 'all';
 let currentInvFilter = 'all';
 
@@ -47,7 +74,7 @@ function updateUI() {
 }
 
 // ==========================================
-// 1. AUTHENTIFICATION
+// 1. AUTHENTIFICATION & CHARGEMENT
 // ==========================================
 
 window.loginUser = async function() {
@@ -136,10 +163,41 @@ async function handleLoginSuccess(user) {
         document.getElementById('profileHighScore').textContent = window.highScore;
         
         updateUI();
+        await calculateBonuses(); // Calcul basé sur l'équipement
         applyCosmetics(); 
         renderInventory(); 
     }
 }
+
+// --- NOUVEAU CALCUL DES BONUS (BASÉ SUR L'ÉQUIPEMENT) ---
+window.calculateBonuses = async function() {
+    if (!window.userProfile) return;
+
+    // Reset
+    window.activeBonuses = { clickPower: 0, timeAdd: 0, hasSuperFire: false };
+
+    // 1. Bonus de Clic Équipé
+    const equippedClick = window.userProfile.equipped_bonus_click;
+    if (equippedClick && ITEM_EFFECTS[equippedClick]) {
+        window.activeBonuses.clickPower = ITEM_EFFECTS[equippedClick].value;
+    }
+
+    // 2. Bonus de Temps Équipé
+    const equippedTime = window.userProfile.equipped_bonus_time;
+    if (equippedTime && ITEM_EFFECTS[equippedTime]) {
+        window.activeBonuses.timeAdd = ITEM_EFFECTS[equippedTime].value;
+    }
+
+    // 3. Spécial Équipé
+    const equippedSpecial = window.userProfile.equipped_special;
+    if (equippedSpecial && ITEM_EFFECTS[equippedSpecial]) {
+        if (ITEM_EFFECTS[equippedSpecial].value === '5x_mode') {
+            window.activeBonuses.hasSuperFire = true;
+        }
+    }
+
+    console.log("Bonus actifs (Equipés) :", window.activeBonuses);
+};
 
 window.logoutUser = async function() {
     await window.sbClient.auth.signOut();
@@ -147,21 +205,18 @@ window.logoutUser = async function() {
     window.userProfile = null;
     coins = 100; 
     window.highScore = 0;
+    window.activeBonuses = { clickPower: 0, timeAdd: 0, hasSuperFire: false };
     
-    // --- NOUVEAU : On vide les formulaires ---
     document.getElementById('pseudoInput').value = ""; 
     document.getElementById('emailInput').value = "";
     document.getElementById('passwordInput').value = "";
-    // -----------------------------------------
 
     document.getElementById('loginSection').classList.remove('hidden');
     document.getElementById('profileInfo').classList.add('hidden');
-    // On s'assure aussi que la section de choix de pseudo est cachée si on se déconnecte pendant l'inscription
     document.getElementById('selectPseudo').classList.add('hidden'); 
     
-    // Reset visuel
     document.getElementById('ziziNormal').src = 'img/penis.png';
-    document.body.style.backgroundImage = ''; // On reset aussi le fond
+    document.body.style.backgroundImage = '';
     document.body.style.backgroundColor = '#727272';
     document.getElementById('handImage').src = 'img/fist.png';
     const audioPlayer = document.getElementById('gameEndSound');
@@ -175,18 +230,22 @@ window.logoutUser = async function() {
 // ==========================================
 
 window.endGame = async function() {
+    // 1. Lancement de la fin de jeu visuelle (affiche le score local temporairement)
     window.originalEndGame(); 
 
+    // 2. Son de fin
     const audioPlayer = document.getElementById('gameEndSound');
     if (audioPlayer && audioPlayer.src) {
         audioPlayer.currentTime = 0;
         audioPlayer.play().catch(e => console.log("Erreur audio:", e));
     }
 
+    // 3. Calcul des gains
     const scoreText = document.getElementById('finalScore').textContent;
     const currentPoints = parseInt(scoreText) || 0;
     const coinsEarned = Math.floor(currentPoints * 0.64);
     
+    // Animation pièces
     const animDiv = document.getElementById('coinAnimation');
     if (animDiv && coinsEarned > 0) {
         animDiv.innerHTML = `+ ${coinsEarned} <i class="fa-solid fa-coins"></i>`;
@@ -195,7 +254,9 @@ window.endGame = async function() {
         setTimeout(() => animDiv.classList.add('hidden'), 2500);
     }
 
+    // 4. Sauvegarde et Correction de l'affichage du Meilleur Score
     if (window.currentUser) {
+        // On récupère les infos à jour depuis la base de données
         const { data: profileData } = await window.sbClient
             .from('profiles')
             .select('high_score, coins, username')
@@ -206,6 +267,7 @@ window.endGame = async function() {
         let dbCoins = profileData ? profileData.coins : 0;
         const currentUsername = profileData ? profileData.username : 'Joueur';
 
+        // Vérification Daily Score (au cas où il serait meilleur que le global)
         const { data: bestDaily } = await window.sbClient
             .from('daily_scores')
             .select('score')
@@ -218,14 +280,26 @@ window.endGame = async function() {
             dbHighScore = bestDaily.score;
         }
 
+        // Le VRAI meilleur score est le max entre celui de la DB et celui qu'on vient de faire
         const newHighScore = Math.max(dbHighScore, currentPoints); 
         const newTotalCoins = dbCoins + coinsEarned;
 
+        // Mise à jour des variables globales
         window.highScore = newHighScore;
         coins = newTotalCoins;
+        
+        // Mise à jour de l'UI du Menu Profil
         document.getElementById('profileHighScore').textContent = newHighScore;
         updateUI();
 
+        // --- CORRECTION ICI : ON MET À JOUR L'ÉCRAN GAME OVER ---
+        const gameOverBestScore = document.getElementById('bestScore');
+        if (gameOverBestScore) {
+            gameOverBestScore.textContent = newHighScore;
+        }
+        // -------------------------------------------------------
+
+        // Sauvegarde en base de données
         await window.sbClient.from('profiles').upsert({
             id: window.currentUser.id,
             username: currentUsername,
@@ -234,6 +308,7 @@ window.endGame = async function() {
             updated_at: new Date()
         });
 
+        // Gestion du Daily Score
         const todayStr = new Date().toISOString().split('T')[0];
         const { data: todayData } = await window.sbClient
             .from('daily_scores')
@@ -274,13 +349,13 @@ async function updateLeaderboard() {
         query = window.sbClient.from('daily_scores')
             .select('username, score')
             .eq('played_at', todayStr)
-            .gt('score', 0) // AJOUT : Score doit être > 0
+            .gt('score', 0)
             .order('score', { ascending: false })
             .limit(100);
     } else {
         query = window.sbClient.from('profiles')
             .select('username, high_score')
-            .gt('high_score', 0) // AJOUT : Score doit être > 0
+            .gt('high_score', 0)
             .order('high_score', { ascending: false })
             .limit(100);
     }
@@ -303,7 +378,7 @@ async function updateLeaderboard() {
 }
 
 // ==========================================
-// 4. BOUTIQUE & INVENTAIRE (AVEC FILTRES)
+// 4. BOUTIQUE & INVENTAIRE
 // ==========================================
 
 window.loadShopItems = async function() {
@@ -311,23 +386,28 @@ window.loadShopItems = async function() {
     if (data) window.shopItemsCache = data;
 };
 
-// --- GESTION DES FILTRES ---
+// --- GESTION DES FILTRES INTELLIGENTE ---
+
+function checkFilter(itemType, filter) {
+    if (filter === 'all') return true;
+    if (filter === 'bonus') {
+        // Le filtre "Bonus" regroupe les 3 types de bonus
+        return itemType === 'bonus_click' || itemType === 'bonus_time' || itemType === 'special';
+    }
+    return itemType === filter;
+}
 
 window.filterShop = function(type, btnElement) {
     currentShopFilter = type;
-    // Visuel des boutons
     document.querySelectorAll('#shopFilters .filter-btn').forEach(b => b.classList.remove('active'));
     btnElement.classList.add('active');
-    // Recharger
     renderShop();
 };
 
 window.filterInventory = function(type, btnElement) {
     currentInvFilter = type;
-    // Visuel des boutons
     document.querySelectorAll('#invFilters .filter-btn').forEach(b => b.classList.remove('active'));
     btnElement.classList.add('active');
-    // Recharger
     renderInventory();
 };
 
@@ -347,15 +427,14 @@ window.renderShop = async function() {
 
     grid.innerHTML = '';
     
-    // FILTRE ICI : On filtre par prix ET par type sélectionné
     const itemsToSell = window.shopItemsCache.filter(item => {
         const isSellable = item.price > 0;
-        const matchesFilter = (currentShopFilter === 'all') || (item.type === currentShopFilter);
+        const matchesFilter = checkFilter(item.type, currentShopFilter);
         return isSellable && matchesFilter;
     });
 
     if (itemsToSell.length === 0) {
-        grid.innerHTML = '<p style="grid-column: span 2; text-align:center; color:#888;">Aucun objet dans cette catégorie.</p>';
+        grid.innerHTML = '<p style="grid-column: span 2; text-align:center; color:#bdc3c7;">Aucun objet dans cette catégorie.</p>';
         return;
     }
 
@@ -363,7 +442,7 @@ window.renderShop = async function() {
         const isOwned = ownedItems.includes(item.id);
         const itemDiv = document.createElement('div');
         const rarityClass = `rarity-${item.rarity || 'common'}`;
-                itemDiv.className = `shop-item ${isOwned ? 'equipped' : ''} ${rarityClass}`;
+        itemDiv.className = `shop-item ${isOwned ? 'equipped' : ''} ${rarityClass}`;
 
         const previewHtml = (item.preview_val && item.preview_val.startsWith('fa-')) 
             ? `<div class="item-preview"><i class="${item.preview_val}"></i></div>`
@@ -371,20 +450,20 @@ window.renderShop = async function() {
 
         let buttonHtml;
         if (isOwned) {
-            buttonHtml = `<button class="buy-btn" style="background:#555; cursor:default;" disabled>Possédé</button>`;
+            buttonHtml = `<button class="buy-btn" disabled>Possédé</button>`;
         } else {
             buttonHtml = `<button class="buy-btn" onclick="buyItem('${item.id}', ${item.price})">${item.price} <i class="fa-solid fa-coins"></i></button>`;
         }
         itemDiv.innerHTML = `
             ${previewHtml}
-            <p style="margin:5px 0; font-weight:bold;">${item.name}</p>
+            <p>${item.name}</p>
             ${buttonHtml}
         `;
         grid.appendChild(itemDiv);
     });
 };
 
-// B. INVENTAIRE
+// B. INVENTAIRE (AVEC BOUTONS EQUIPER POUR LES BONUS)
 window.renderInventory = async function() {
     const grid = document.getElementById('inventoryGrid');
     if (!grid || !window.currentUser) return;
@@ -395,31 +474,43 @@ window.renderInventory = async function() {
     const { data } = await window.sbClient.from('inventory').select('item_id').eq('user_id', window.currentUser.id);
     if (data) ownedIds = [...ownedIds, ...data.map(i => i.item_id)];
 
+    // Récupération des objets équipés actuels
     const currentSkin = window.userProfile.equipped_skin || 'skin_default';
     const currentBg = window.userProfile.equipped_bg || 'default';
     const currentHand = window.userProfile.equipped_hand || 'hand_default';
     const currentSound = window.userProfile.equipped_sound || 'sound_default';
+    
+    // Nouveaux équipements
+    const currentBonusClick = window.userProfile.equipped_bonus_click;
+    const currentBonusTime = window.userProfile.equipped_bonus_time;
+    const currentSpecial = window.userProfile.equipped_special;
 
     grid.innerHTML = '';
 
-    // FILTRE ICI : On filtre les items possédés par le type sélectionné
     const myItems = window.shopItemsCache.filter(item => {
         const isOwned = ownedIds.includes(item.id);
-        const matchesFilter = (currentInvFilter === 'all') || (item.type === currentInvFilter);
+        const matchesFilter = checkFilter(item.type, currentInvFilter);
         return isOwned && matchesFilter;
     });
 
     if (myItems.length === 0) {
-        grid.innerHTML = '<p style="grid-column: span 2; text-align:center; color:#888;">Vide...</p>';
+        grid.innerHTML = '<p style="grid-column: span 2; text-align:center; color:#bdc3c7;">Vide...</p>';
         return;
     }
 
     myItems.forEach(item => {
         let isEquipped = false;
-        if (item.type === 'skin' && currentSkin === item.id) isEquipped = true;
-        if (item.type === 'bg' && currentBg === item.id) isEquipped = true;
-        if (item.type === 'hand' && currentHand === item.id) isEquipped = true;
-        if (item.type === 'sound' && currentSound === item.id) isEquipped = true;
+        
+        // Vérification générique
+        if (item.id === currentSkin) isEquipped = true;
+        if (item.id === currentBg) isEquipped = true;
+        if (item.id === currentHand) isEquipped = true;
+        if (item.id === currentSound) isEquipped = true;
+        
+        // Vérification des bonus
+        if (item.id === currentBonusClick) isEquipped = true;
+        if (item.id === currentBonusTime) isEquipped = true;
+        if (item.id === currentSpecial) isEquipped = true;
 
         const itemDiv = document.createElement('div');
         const rarityClass = `rarity-${item.rarity || 'common'}`;
@@ -432,10 +523,11 @@ window.renderInventory = async function() {
         let btnStyle = isEquipped ? 'background:#2ed573; border:none;' : 'background:#3498db; border:none;';
         let btnText = isEquipped ? 'Actif' : 'Équiper';
         
+        // On passe item.type pour que la fonction equipItem sache dans quelle colonne enregistrer
         itemDiv.innerHTML = `
             ${previewHtml}
-            <p style="font-size:0.8em; margin:5px 0; font-weight:bold;">${item.name}</p>
-            <button class="action-btn" style="width:100%; padding:5px; ${btnStyle}" 
+            <p>${item.name}</p>
+            <button class="action-btn" style="${btnStyle}" 
                 onclick="equipItem('${item.id}', '${item.type}')" 
                 ${isEquipped ? 'disabled' : ''}>${btnText}</button>
         `;
@@ -459,18 +551,33 @@ window.buyItem = async function(itemId, price) {
 
 window.equipItem = async function(itemId, type) {
     let update = {};
+    
+    // Mapping des types vers les colonnes de la BDD
     if (type === 'skin') update = { equipped_skin: itemId };
     if (type === 'bg') update = { equipped_bg: itemId };
     if (type === 'hand') update = { equipped_hand: itemId };
     if (type === 'sound') update = { equipped_sound: itemId };
+    
+    // Nouveaux types (Bonus)
+    if (type === 'bonus_click') update = { equipped_bonus_click: itemId };
+    if (type === 'bonus_time') update = { equipped_bonus_time: itemId };
+    if (type === 'special') update = { equipped_special: itemId };
 
     const { error } = await window.sbClient.from('profiles').update(update).eq('id', window.currentUser.id);
 
     if (!error) {
+        // Mise à jour locale pour affichage immédiat
         if (type === 'skin') window.userProfile.equipped_skin = itemId;
         if (type === 'bg') window.userProfile.equipped_bg = itemId;
         if (type === 'hand') window.userProfile.equipped_hand = itemId;
         if (type === 'sound') window.userProfile.equipped_sound = itemId;
+        
+        if (type === 'bonus_click') window.userProfile.equipped_bonus_click = itemId;
+        if (type === 'bonus_time') window.userProfile.equipped_bonus_time = itemId;
+        if (type === 'special') window.userProfile.equipped_special = itemId;
+        
+        // On recalcule les bonus (important !)
+        await calculateBonuses();
         
         applyCosmetics();
         renderInventory(); 
@@ -526,7 +633,6 @@ window.applyCosmetics = function() {
     }
 };
 
-// Initialisation
 window.addEventListener('load', async () => {
     loadShopItems();
     const { data } = await window.sbClient.auth.getSession();

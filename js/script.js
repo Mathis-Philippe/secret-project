@@ -25,32 +25,28 @@ let resetTimer;
 
 let gameStarted = false;
 let isGameOver = false;
-const GAME_DURATION = 15000;
-let timeLeft = GAME_DURATION;
+const BASE_GAME_DURATION = 15000; // Durée de base
+let timeLeft = BASE_GAME_DURATION;
 let timerInterval;
 
 window.point = point;
 window.highScore = highScore;
 
-// --- 3. FONCTIONS ---
+// --- FONCTIONS ---
 
 function endGame() {
     isGameOver = true;
     gameStarted = false;
-    clearInterval(timerInterval); // On arrête le chrono
+    clearInterval(timerInterval);
 
-    // Mise à jour du meilleur score
     if (point > highScore) {
         highScore = point;
         window.highScore = highScore;
     }
 
-    // On remplit les scores dans l'HTML
     if (finalScoreSpan) finalScoreSpan.textContent = point;
     if (bestScoreSpan) bestScoreSpan.textContent = highScore;
 
-    // AFFICHER L'ÉCRAN DE FIN + EFFET YAOURT
-    // C'est ici que ça plantait avant si gameOverScreen n'était pas défini
     if (gameOverScreen) {
         gameOverScreen.classList.remove('hidden');
         gameOverScreen.classList.add('yogurt-background');
@@ -63,16 +59,17 @@ window.endGame = endGame;
 function restartGame() {
     point = 0;
     window.point = 0;
-    timeLeft = GAME_DURATION;
+    
+    // On remet la durée de base pour l'instant (sera recalculée au start)
+    timeLeft = BASE_GAME_DURATION; 
+    
     isGameOver = false;
     gameStarted = false;
 
-    // Reset visuel
     displayScore.textContent = `Score : 0`;
     displayScore.style.color = "#ffffff";
     timerBar.style.width = '100%';
 
-    // CACHER L'ÉCRAN DE FIN
     if (gameOverScreen) {
         gameOverScreen.classList.add('hidden');
         gameOverScreen.classList.remove('yogurt-background');
@@ -89,13 +86,17 @@ function startTimer() {
     gameStarted = true;
     const startTime = Date.now();
 
+    // CALCUL DU TEMPS TOTAL AVEC BONUS
+    const bonusTime = (window.activeBonuses && window.activeBonuses.timeAdd) ? window.activeBonuses.timeAdd : 0;
+    const totalDuration = BASE_GAME_DURATION + bonusTime;
+
     if (timerInterval) clearInterval(timerInterval);
 
     timerInterval = setInterval(() => {
         const elapsed = Date.now() - startTime;
-        timeLeft = GAME_DURATION - elapsed;
+        timeLeft = totalDuration - elapsed;
 
-        const percentage = (timeLeft / GAME_DURATION) * 100;
+        const percentage = (timeLeft / totalDuration) * 100;
         if (timerBar) timerBar.style.width = `${percentage}%`;
 
         if (timeLeft <= 0) {

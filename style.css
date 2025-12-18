@@ -132,26 +132,19 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    width: 300px;
-    /* Largeur du menu */
+    width: 340px; 
     height: 100vh;
-    background-color: rgba(30, 30, 30, 0.95);
-    /* Fond sombre semi-transparent */
-    backdrop-filter: blur(5px);
-    color: white;
     padding: 20px;
     box-sizing: border-box;
-
-    /* Animation de glissement */
     transform: translateX(-120%);
-    transition: transform 0.3s ease-in-out;
-
+    transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1); 
     z-index: 300;
-    /* Au-dessus de tout (même du Game Over qui est à 200) */
-    border-right: 2px solid #ff4757;
-    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
-    font-family: Arial, sans-serif;
-    overflow: auto;
+    overflow-y: auto;
+    background: rgba(20, 20, 20, 0.85); 
+    backdrop-filter: blur(15px); 
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+    color: #ecf0f1;
 }
 
 /* Classe pour afficher le menu */
@@ -160,11 +153,15 @@ body {
 }
 
 .side-menu h2 {
-    border-bottom: 1px solid #555;
-    padding-bottom: 10px;
-    margin-top: 0;
+    font-family: 'BBH Bartle', sans-serif; 
+    border-bottom: 2px solid #ff4757;
+    padding-bottom: 15px;
+    margin-top: 10px;
     text-align: center;
     color: #ff4757;
+    font-size: 1.3em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 /* Bouton fermer (croix) */
@@ -196,16 +193,46 @@ body {
     font-size: 2em;
 }
 
-.action-btn {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    background: #ff4757;
+.action-btn, .buy-btn, .equip-btn {
     border: none;
-    color: white;
+    border-radius: 8px;
+    padding: 12px;
     font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     cursor: pointer;
-    border-radius: 5px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    font-family: Arial, sans-serif;
+}
+
+.buy-btn {
+    background: linear-gradient(135deg, #2ed573, #7bed9f);
+    color: #1e272e;
+    width: 100%;
+    font-size: 0.85em;
+    padding: 8px;
+}
+.buy-btn:hover {
+    filter: brightness(1.1);
+}
+.buy-btn:disabled {
+    background: #57606f;
+    color: #a4b0be;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.action-btn {
+    background: linear-gradient(135deg, #ff4757, #ff6b81);
+    color: white;
+    width: 100%;
+    margin-top: 10px;
+}
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(255, 71, 87, 0.4);
 }
 
 .logout-btn {
@@ -219,43 +246,53 @@ body {
 }
 
 input {
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    box-sizing: border-box;
-    border-radius: 5px;
-    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    transition: border-color 0.3s;
+    width: 90%;
+}
+input:focus {
+    outline: none;
+    border-color: #ff4757;
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .filter-tabs {
+    background: rgba(0,0,0,0.2);
+    padding: 5px;
+    border-radius: 20px;
+    margin-bottom: 20px;
     display: flex;
     justify-content: center;
-    gap: 5px;
-    margin-bottom: 15px;
     flex-wrap: wrap;
+    gap: 5px;
 }
 
 .filter-btn {
-    background: #444;
-    border: 1px solid #666;
-    color: #ccc;
-    padding: 5px 10px;
+    background: transparent;
+    border: none;
+    color: #bdc3c7;
+    padding: 6px 12px;
     border-radius: 15px;
+    font-size: 0.8em;
+    font-weight: bold;
     cursor: pointer;
-    font-size: 0.85em;
     transition: all 0.2s;
 }
 
 .filter-btn:hover {
-    background: #555;
     color: white;
+    background: rgba(255,255,255,0.1);
 }
 
 .filter-btn.active {
-    background: #3498db; /* Bleu style "Equiper" */
+    background: #ff4757;
     color: white;
-    border-color: #3498db;
-    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(255, 71, 87, 0.4);
 }
 
 /* Styles spécifiques au Classement */
@@ -325,42 +362,41 @@ input {
 
 .shop-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    padding-bottom: 20px;
 }
 
 .shop-item {
-    background: #444;
-    padding: 10px;
-    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 12px;
     text-align: center;
+    position: relative;
+    border: 2px solid transparent; 
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.shop-item:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 
 .item-preview {
-    height: 50px;
-    width: 50px;
+    height: 60px;
+    width: 60px;
     margin: 0 auto 10px;
-    background: #666;
-    border-radius: 5px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-.buy-btn {
-    background: #2ed573;
-    border: none;
-    color: white;
-    padding: 5px;
-    border-radius: 3px;
-    cursor: pointer;
-    width: 100%;
-    font-size: 0.9em;
-}
-
-.buy-btn:hover {
-    background: #26af61;
+    font-size: 1.5em; /* Pour les icones FA */
+    color: #ddd;
 }
 
 
@@ -521,16 +557,6 @@ input {
     z-index: 10;
 }
 
-.equip-btn {
-    background: #3498db;
-    border: none;
-    color: white;
-    padding: 5px;
-    border-radius: 3px;
-    cursor: pointer;
-    width: 100%;
-    font-size: 0.9em;
-}
 
 .equip-btn:hover {
     background: #2980b9;
@@ -623,28 +649,32 @@ input {
     transform: translateY(-3px);
 }
 
-/* 1. COMMUN (Gris/Blanc basique) */
-.rarity-common {
-    border-color: #95a5a6;
+.shop-item p {
+    font-size: 0.9em;
+    margin: 5px 0 10px 0;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
-.rarity-rare {
+.rarity-common { 
+    border-color: #7f8c8d;
+    box-shadow: inset 0 0 10px rgba(127, 140, 141, 0.1);
+}
+
+.rarity-rare { 
     border-color: #3498db;
-    background: linear-gradient(135deg, #444 60%, #2c3e50 100%);
-    box-shadow: 0 0 5px #3498db;
+    box-shadow: inset 0 0 10px rgba(52, 152, 219, 0.2);
 }
 
-.rarity-epic {
+.rarity-epic { 
     border-color: #9b59b6;
-    background: linear-gradient(135deg, #444 60%, #4a235a 100%);
-    box-shadow: 0 0 10px #9b59b6;
+     box-shadow: inset 0 0 10px rgba(155, 89, 182, 0.2);
 }
 
-.rarity-legendary {
-    border-color: #f1c40f;
-    background: linear-gradient(135deg, #444 60%, #7f6000 100%);
-    box-shadow: 0 0 15px #f1c40f;
-    animation: legendaryGlow 2s infinite alternate;
+.rarity-legendary { 
+    border-color: #f1c40f; 
+    box-shadow: inset 0 0 15px rgba(241, 196, 15, 0.3), 0 0 10px rgba(241, 196, 15, 0.2);
 }
 
 @keyframes legendaryGlow {

@@ -22,39 +22,38 @@ addEventListener('keydown', function (e) {
         const timeDiff = currentTime - lastClickTime;
         lastClickTime = currentTime;
 
-        // On nettoie le timer précédent pour éviter que le zizi repasse en normal
+        // On nettoie le timer précédent
         clearTimeout(resetTimer);
 
         let multiplier = 1;
 
-        // --- GESTION DES MODES (Normal, Rapide, Fire) ---
+        // --- GESTION DES MODES (Normal, Rapide, Fire, SUPER FIRE) ---
         
         if (timeDiff < 250) { 
             // LE JOUEUR EST RAPIDE
-
-            // 1. Si c'est le début du mode rapide, on note l'heure
             if (!fastModeStartTime) {
                 fastModeStartTime = Date.now();
             }
 
-            // 2. On calcule la durée du combo
             const comboDuration = Date.now() - fastModeStartTime;
 
-            // 3. Gestion Visuelle Zizi
             ziziFast.style.opacity = "1";
             ziziNormal.style.opacity = "0";
 
+            // 5. NOUVEAU : CHECK 10 SECONDES + ITEM SPÉCIAL (x5)
+            if (comboDuration > 10000 && window.activeBonuses && window.activeBonuses.hasSuperFire) {
+                multiplier = 5;
+                document.body.classList.add('shake-mode');
+                ziziFast.classList.add('fire-mode'); 
+                // Optionnel : ajouter une classe spéciale CSS pour changer la couleur du feu
+            } 
             // 4. CHECK 5 SECONDES : MODE FEU (x3)
-            if (comboDuration > 5000) {
+            else if (comboDuration > 5000) {
                 multiplier = 3;
-                
-                // Active les effets visuels
-                document.body.classList.add('shake-mode'); // L'écran tremble
-                ziziFast.classList.add('fire-mode');       // Flammes
+                document.body.classList.add('shake-mode');
+                ziziFast.classList.add('fire-mode');
             } else {
-                // Mode Rapide classique (x2)
                 multiplier = 2;
-                // On s'assure que les effets du mode feu sont éteints si on est < 5s
                 document.body.classList.remove('shake-mode');
                 ziziFast.classList.remove('fire-mode');
             }
@@ -64,7 +63,6 @@ addEventListener('keydown', function (e) {
                 ziziFast.style.opacity = "0";
                 ziziNormal.style.opacity = "1";
                 
-                // On reset tout le combo
                 fastModeStartTime = null;
                 document.body.classList.remove('shake-mode');
                 ziziFast.classList.remove('fire-mode');
@@ -89,10 +87,18 @@ addEventListener('keydown', function (e) {
 
         setTimeout(() => {
             main.style.transform = "translate(-50%, -50%)";
-            point += multiplier;
+            
+            // CALCUL DU SCORE AVEC BONUS
+            const bonusClick = (window.activeBonuses && window.activeBonuses.clickPower) ? window.activeBonuses.clickPower : 0;
+            const pointsGained = (1 + bonusClick) * multiplier;
+            
+            point += pointsGained;
 
             // --- AFFICHAGE SCORE ---
-            if (multiplier === 3) {
+            if (multiplier === 5) {
+                displayScore.innerHTML = `Score : ${point} <br>⚡ x5 GOD MODE ⚡`;
+                displayScore.style.color = "#00d2d3"; // Cyan électrique
+            } else if (multiplier === 3) {
                 displayScore.innerHTML = `Score : ${point} <br>🔥 x3 SUPER COMBO 🔥`;
                 displayScore.style.color = "#ffdd59"; // Jaune feu
             } else if (multiplier === 2) {
