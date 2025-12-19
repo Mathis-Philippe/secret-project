@@ -708,8 +708,8 @@ input:focus {
     left: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none; /* Pour cliquer au travers si besoin */
-    z-index: 150; /* Au-dessus du jeu mais sous les menus */
+    pointer-events: none;
+    z-index: 150; 
 }
 
 .floating-word {
@@ -724,6 +724,8 @@ input:focus {
     text-transform: uppercase;
     box-shadow: 0 0 15px rgba(0,0,0,0.5);
     border: 2px solid white;
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 .letter-correct {
@@ -759,7 +761,7 @@ input:focus {
 
     /* 4. Repositionnement du Score : Au centre, sous la barre de temps */
     .scoreDisplay {
-        top: 45px; /* Sous la barre de 20px + marge */
+        top: 45px;
         left: 50%;
         right: auto;
         transform: translateX(-50%);
@@ -770,17 +772,26 @@ input:focus {
         white-space: nowrap;
     }
 
-    /* 5. Boutons de menu plus compacts mais accessibles */
+    /* 5. BOUTONS MENU EN BAS DE L'ÉCRAN */
     .menu-buttons {
-        top: 15px;
-        left: 10px;
-        gap: 10px;
+        top: auto;        /* Annule le positionnement haut */
+        bottom: 30px;     /* Place en bas */
+        left: 50%;        /* Centre horizontalement */
+        right: auto;
+        transform: translateX(-50%); /* Ajuste le centrage */
+        
+        flex-direction: row; /* Alignement horizontal */
+        gap: 25px;        /* Espacement */
+        width: auto;
     }
     
     .menu-buttons button {
-        width: 42px;
-        height: 42px;
-        font-size: 1em;
+        width: 50px;
+        height: 50px;
+        font-size: 1.1em;
+        /* Ombre plus marquée pour bien ressortir sur le fond */
+        box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        background-color: rgba(20, 20, 20, 0.95);
     }
 
     /* 6. Mots flottants plus petits */
@@ -789,30 +800,29 @@ input:focus {
         padding: 5px 10px;
     }
 
-    /* 7. Game Over Screen adapté */
     .game-over-screen h1 {
         font-size: 2.2em;
     }
 
-    /* 8. Filtres de la boutique en défilement horizontal si trop nombreux */
     .filter-tabs {
         display: flex;
         flex-wrap: nowrap;
         overflow-x: auto;
         justify-content: flex-start;
         padding-bottom: 5px;
-        -webkit-overflow-scrolling: touch; /* Scroll fluide sur iOS */
+        -webkit-overflow-scrolling: touch;
     }
     
     .filter-btn {
-        flex: 0 0 auto; /* Empêche l'écrasement */
+        flex: 0 0 auto;
     }
 }
 
-/* Pour les très petits écrans (iPhone SE, vieux Androids) */
+/* Pour les très petits écrans */
 @media (max-width: 380px) {
     .MainSvg { width: 11em; height: 11em; }
     .scoreDisplay { font-size: 1.1em; top: 40px; }
     .game-over-screen h1 { font-size: 1.8em; }
     .shop-grid { gap: 8px; }
+    .menu-buttons { bottom: 20px; gap: 15px; }
 }
